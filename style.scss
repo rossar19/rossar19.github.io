@@ -1,0 +1,39 @@
+---
+---
+
+@mixin borderRadius($radius: 5px) {
+-webkit-border-radius: $radius;
+   -moz-border-radius: $radius;
+    -ms-border-radius: $radius;
+        border-radius: $radius;
+}
+
+.trace {
+  display: block;
+}
+
+.clear {
+  clear: both;
+}
+
+.divider {
+  display: block;
+  width: 96%;
+  background-color: #ccff99;
+  padding: 10px 2%;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 510px;
+}
+
+svg {
+  &.enlarge {
+    transform-origin: top left;
+    transform: scale(2);
+    width: 100%;
+    height: 255px;
+  }
+}

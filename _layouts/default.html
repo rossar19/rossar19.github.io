@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+		<meta charset="utf-8" /> <!-- Meta Charset - Tells your computer what character set/encoding to use.  D3 needs this. -->
+      <!-- logic uses curly bracket the percentage, which is template logic -->
+	  <title>
+      {% if page.title %}
+        This page is: {{ page.title }}
+      {% else %}
+        My Non-Existent Self and I
+      {% endif %}
+    </title>
+		<!-- Bookmarks and SEO (Google ranks searches and if you have a better ranking, the site shows higher on the list)
+	 			 Search engines go to ever page on the website and try to get as much info it can read in every page -->
+		<link rel="stylesheet" href="../style.css" />
+	</head>
+	<body>
+      <h2>{{ page.header }}</h2>
+      {{ content }}
+	</body>
+</html>
