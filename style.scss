@@ -1,6 +1,21 @@
 ---
 ---
 
+body {
+  font-family: sans-serif;
+  margin: 0 auto;
+
+  header {
+    width: 100%;
+    text-align: center;
+    background-color: #5daaa7;
+    padding: 20px 0;
+  }
+
+  main {
+    padding: 20px 10px;
+  }
+}
 @mixin borderRadius($radius: 5px) {
 -webkit-border-radius: $radius;
    -moz-border-radius: $radius;
@@ -29,11 +44,11 @@
   height: 510px;
 }
 
-svg {
+svg { // kandinsky
   &.enlarge {
     transform-origin: top left;
     transform: scale(2);
-    width: 100%;
+    width: 648px;
     height: 255px;
   }
 }
