@@ -1,0 +1,27 @@
+---
+layout: default
+title: Messing Around
+header: Testing Things Out
+---
+
+<svg></svg>
+
+<script>
+  var data = [23, 54, 34];
+
+	var svg = d3.select("svg").attr("width", 400).attr("width", 400);
+
+  //use "*" for all direct children
+	var circles = svg.selectAll("circle").data(data);
+
+	circles.enter().append("circle")
+	.attr("cx", function(d, i) {
+		return 60 + (120 * i);
+	})
+	.attr("cy", function(d) {
+		return 60;
+	})
+	.attr("r", function(d) {
+		return d;
+	});
+</script>
