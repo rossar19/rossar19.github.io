@@ -7,21 +7,61 @@ header: Testing Things Out
 <svg></svg>
 
 <script>
-  var data = [23, 54, 34];
 
-	var svg = d3.select("svg").attr("width", 400).attr("width", 400);
+  var randomData = function() {
+    var randomArray = [];
+    var num = Math.ceil(Math.random()*5);
+    for (var i = 0; i < num; i++) {
+      randomArray.push(Math.random() * 50);
+    }
+    return randomArray;
+  }
 
-  //use "*" for all direct children
-	var circles = svg.selectAll("circle").data(data);
+  // var giantObjectOfData = {
+  //   "2010": "",
+  //   "2012": ""
+  // }
 
-	circles.enter().append("circle")
-	.attr("cx", function(d, i) {
-		return 60 + (120 * i);
-	})
-	.attr("cy", function(d) {
-		return 60;
-	})
-	.attr("r", function(d) {
-		return d;
-	});
+  var draw = function() {
+    var data = randomData(); //[23, 54, 34];
+    var svg = d3.select("svg").attr("width", 1000).attr("height", 400);
+
+    //use "*" for all direct children
+  	var circles = svg.selectAll("circle").data(data);
+
+    // creates new circle (if data point)
+  	circles.enter()
+    .append("circle")
+    .attr("fill", "green")
+  	.attr("cx", function(d, i) {
+  		return 60 + (120 * i);
+  	})
+  	.attr("cy", function(d) {
+  		return 60;
+  	})
+    .transition().duration(500)
+  	.attr("r", function(d) {
+  		return d;
+  	});
+
+    // updates circle radius
+    circles.transition().duration(1000)
+    .attr("r", function(d) {
+  		return d;
+  	})
+    .attr("fill", "blue");
+    // if you use another transition after r,
+    // it will transition the green AFTER r's animation
+
+    //remove circles, if not enough data points
+    circles.exit()
+    .transition().duration(500)
+    .attr("r", 0)
+    .attr("fill", "red")
+    .remove();
+  }
+
+  draw();
+  setInterval(draw, 1000);
+
 </script>

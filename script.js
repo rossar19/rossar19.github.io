@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
     stepThruAni(1, array);
     d3.select(this).attr("data-action", newState).text(newState);
   });
-
+  
 
 
 
