@@ -1,67 +1,50 @@
 ---
 layout: default
-header: 10/11 Assignment - Research
+header: 10/18 Assignment - Load A Data set
 ---
-  <h1>Global Attitudes &amp; Trends</h1>
+	<p>Check the console</p>
+  <svg></svg>
 
-  <p><strong>Spring 2014 Survey Data</strong> found
-    <a href="http://www.pewglobal.org/category/datasets/" target="_blank">here</a>.
-     A survey conducted on 44 nations asked about how citizens felt about their
-     day was going, how they would rate their life, how they would rate certain
-     aspects of their life, and a bunch of other questions.
-     <br />
-     <br />
-     Sample Questions:
-     <ul>
-       <li>Q1. To begin, how would you describe your day today—has it been a
-         typical day, a particularly good day, or a particularly bad day?</li>
-      <br />
-      <li>Q2B. Imagine a ladder with steps numbered from 0 at the bottom to 10
-        at the top.  The top represents the best possible life for you; the
-        bottom, the worst possible life.  On which step do you feel you
-        personally stand at present time?</li>
-     <br />
-      <li>Q24. Which one of these issues is the most important for the
-        government to address first – rising prices, a lack of employment
-        opportunities, the gap between the rich and the poor or public debt?</li>
-     <br />
-       <li>Q134. Do you have friends or relatives who live in another country
-         that you write to, telephone or visit regularly?</li>
-      <br />
-      <li>Q148E. And in your household, do you have any of the following? Count
-        only those that are in working order. -- computer</li>
-     </ul>
-   </p>
+  <script>
 
-<h3>Variables</h3>
-<ul>
-  <li>Questions asked</li>
-  <li>Country</li>
-  <li>Attitudes/Answers per person</li>
-</ul>
+  		// var draw = function(data) {
+  		// 	var svg = d3.select("svg");
 
-<h3>Visualization ideas:</h3>
-<ul>
-  <li>Map of world, each country color coded by average happiness rating.  Click
-  on country to see breakdown of people's answers, and show answers to questions
-  that might affect happiness (e.g. "How much of an optimist do you consider yourself?").</li>
-  <br />
-  <li>Consider asking user to input their response to questions, and be able
-  to compare their happiness to average of certain countries</li>
-  <br />
-  <li><a href="http://bl.ocks.org/mbostock/5944371" target="_blank">This</a> looks
-    pretty cool...<a href="http://bl.ocks.org/mbostock" target="_blank">bl.ocks.org
-    </a></li>
-  <br />
-  <li>A lot of different questions (e.g. "Of these possibilities, which do you
-    consider to be the biggest threat to the world?", or "How much of an optimist
-    do you consider yourself?") - use different visualizations for each question</li>
-  <br />
-  <li>For each country, split into sections based on questions?</li>
-  <br />
-  <li>Compare people's answers to questions based on how they answered other
-    questions?</li>
-</ul>
+  		// 	var circles = svg.selectAll("circle").data(data);
+
+  		// 	var dataExtent = d3.extent(data, function(d, i) {
+		  //     return d.values.length;
+		  //   });
+
+		  //   var radius = d3.scaleLinear()
+		  //   .domain(dataExtent)
+		  //   .range([25, 50]);
+
+		  //   circles.enter().append("circle")
+		  //   .attr("cy", 60)
+		  //   .attr("cx", function(d, i) {
+		  //     return 60 + (120*i); // i == 0 ? 60 : 100;
+		  //   })
+		  //   .attr("r", function(d, i) {
+		  //     return radius(d.values.length);
+		  //   });
+  		// }
+
+	    d3.csv("Global Attitudes - shortCSV.csv", function(error, data) {
+
+	    	var nestedData = d3.nest()
+		  	.key(function(d, i) {
+		  		return d.Country;
+		  	})
+		  	// .key(function(d, i) {
+		  	// 	return d["Q132. Gender"];
+		  	// })
+		  	.entries(data);
+		  	console.log(nestedData);
+
+		  	//draw(nestedData);
+	    });
+  </script>
 
   <br />
   <a href="past-assignments.html">See previous assignments.</a>
