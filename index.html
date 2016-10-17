@@ -2,33 +2,71 @@
 layout: default
 header: 10/18 Assignment - Load A Data set
 ---
-	<p>Check the console</p>
-  <svg></svg>
+  <p><strong>Spring 2014 Survey Data</strong> found
+    <a href="http://www.pewglobal.org/category/datasets/" target="_blank">here</a>.
+     A survey conducted on 44 nations asked about how citizens felt about their
+     day was going, how they would rate their life, how they would rate certain
+     aspects of their life, and a bunch of other questions.
+   </p>
+
+	<p>Check the console.  Number of survey respondents per country</p>
+
+  <svg width="600" height="1100"></svg>
 
   <script>
 
-  		// var draw = function(data) {
-  		// 	var svg = d3.select("svg");
+  		var draw = function(data) {
+  			var svg = d3.select("svg");
 
-  		// 	var circles = svg.selectAll("circle").data(data);
+  			var circles = svg.selectAll("circle").data(data);
+  			var nameText = svg.selectAll("text").data(data);
+  			var numText = svg.selectAll("text").data(data);
 
-  		// 	var dataExtent = d3.extent(data, function(d, i) {
-		  //     return d.values.length;
-		  //   });
+  			var dataExtent = d3.extent(data, function(d, i) {
+		      return d.values.length;
+		    });
 
-		  //   var radius = d3.scaleLinear()
-		  //   .domain(dataExtent)
-		  //   .range([25, 50]);
+		    var radius = d3.scaleLinear()
+		    .domain(dataExtent)
+		    .range([25, 50]);
 
-		  //   circles.enter().append("circle")
-		  //   .attr("cy", 60)
-		  //   .attr("cx", function(d, i) {
-		  //     return 60 + (120*i); // i == 0 ? 60 : 100;
-		  //   })
-		  //   .attr("r", function(d, i) {
-		  //     return radius(d.values.length);
-		  //   });
-  		// }
+		    circles.enter().append("circle")
+		    .attr("cy", function(d, i) {
+		    	return 60 + (120 * Math.floor(i/5));
+		    })
+		    .attr("cx", function(d, i) {
+		      return 60 + (120*(i%5)); // i == 0 ? 60 : 100;
+		    })
+		    .attr("r", function(d, i) {
+		      return radius(d.values.length);
+		    });
+
+		    nameText.enter().append("text")
+		    .attr("y", function(d, i) {
+		    	return 50 + (120 * Math.floor(i/5)) - radius(d.values.length);
+		    })
+		    .attr("x", function(d, i) {
+		      return 60 + (120*(i%5)); // i == 0 ? 60 : 100;
+		    })
+		    .attr("fill", "red")
+		    .attr("text-anchor", "middle")
+		    .text(function(d) {
+		    	return d.key;
+		    });
+
+		    numText.enter().append("text")
+		    .attr("y", function(d, i) {
+		    	return 60 + (120 * Math.floor(i/5));
+		    })
+		    .attr("x", function(d, i) {
+		      return 60 + (120*(i%5)); // i == 0 ? 60 : 100;
+		    })
+		    .attr("fill", "white")
+		    .attr("text-anchor", "middle")
+		    .text(function(d) {
+		    	return d.values.length;
+		    });
+  		}
 
 	    d3.csv("Global Attitudes - shortCSV.csv", function(error, data) {
 
@@ -42,7 +80,7 @@ header: 10/18 Assignment - Load A Data set
 		  	.entries(data);
 		  	console.log(nestedData);
 
-		  	//draw(nestedData);
+		  	draw(nestedData);
 	    });
   </script>
 
