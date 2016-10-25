@@ -1,0 +1,106 @@
+---
+layout: default
+---
+
+<label for="slider">Year</label>
+<input type="range" id="slider" />
+<input type="text" id="textBox" />
+
+<svg width=600 height=600></svg>
+
+<script>
+
+	var years = [];
+
+
+	var draw = function(data, year) {
+
+		var afg = data[0];
+
+
+		var values = years.map(function(y) {
+			return afg[y + " [YR" + y + "]"];
+		});
+
+		var radius = d3.scaleLinear()
+			.domain([d3.min(values), d3.max(values)]) // or d3.extent(values)
+			.range([10, 20]);
+
+		console.log(values);
+		console.log(year);
+		//console.log(year, afg[year + " [YR" + year + "]"])
+
+		var svg = d3.select("svg");
+
+		var circle = svg.selectAll("circle").data([afg]); //only accepts an array of data points
+
+		var enter = circle.enter().append("circle");
+
+		circle.merge(enter)
+		.attr("cy", window.innerWidth / 4)
+		.attr("cx", window.innerWidth / 2)
+		.transition().duration(500)
+		.attr("fill", function(d) {
+			var num = afg[year + " [YR" + year + "]"];
+			if (isNaN(parseFloat(num))) {
+				return "red";
+			}
+
+			return "black";
+
+		})
+		.attr("r", function(d) {
+			var num = afg[year + " [YR" + year + "]"];
+			if (isNaN(parseFloat(num))) {
+				return 30;
+			}
+			return radius(num);
+		});
+	}
+
+	d3.csv("greenhouse.csv", function(error, data) {
+
+		data.forEach(function(d, i) {
+			for (var key in d) {
+
+				var num = parseFloat(d[key]);
+
+				if (i == 0) {
+					console.log(key.split(" "));
+				}
+
+				if (!isNaN(num)) {
+					d[key] = num;
+				}
+			}
+		});
+
+		console.log(data);
+		for(var key in data[0]) {
+			var num = parseFloat(key.split(" ")[0]);
+
+			if (!isNaN(num)) {
+				years.push(num);
+			}
+			console.log(parseFloat(key.split(" ")[0]));
+		}
+
+		d3.select("#slider")
+		.attr("min", d3.min(years))
+		.attr("max", d3.max(years))
+		.attr("value", d3.min(years))
+		.on("input", function() {
+			// d3.select(this).node().value <--gets the non-d3 element (dom element)
+			d3.select("#textBox").node().value = this.value;
+			draw(data, this.value);
+		});
+
+		console.log(years);
+
+		draw(data, d3.min(years));
+
+	});
+
+
+
+</script>
