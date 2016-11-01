@@ -4,6 +4,7 @@
 body {
   font-family: sans-serif;
   margin: 0 auto;
+  padding: 20px 40px;
 
   header {
     width: 100%;
@@ -11,6 +12,61 @@ body {
     background-color: #5daaa7;
     padding: 20px 0;
   }
+
+  .data-header {
+
+  }
+
+  .data-copy {
+    max-width: 450px;
+    font-size: 14px;
+    .back-btn {
+      display: block;
+      margin-top: 20px;
+    }
+  }
+
+  .wrapper {
+    width: 100%;
+    margin: 40px 0;
+    .country {
+      width: 100px;
+      height: 150px;
+      display: inline-block;
+      margin: 15px 10px;
+      &:hover {
+        opacity: 0.5;
+        cursor: pointer;
+      }
+      &--name {
+        margin: 5px 0;
+      }
+      &--block {
+        width: 100px;
+        height: 100px;
+        background-color: gray;
+      }
+    }
+    .btn-wrapper {
+      width: 20%;
+      display: inline-block;
+      .filter-btn {
+        display: block;
+        margin: 10px 0;
+      }
+    }
+    .data-wrapper {
+      width: 80%;
+      display: inline-block;
+      vertical-align: top;
+      text-align: center;
+      .category {
+        margin: 0 20px;
+        display: inline-block;
+      }
+    }
+  }
+
 
   main {
     padding: 20px 10px;

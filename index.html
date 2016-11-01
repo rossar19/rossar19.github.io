@@ -1,19 +1,100 @@
 ---
 layout: default
-header: 10/25 Assignment - Visualize Data (Global Attitudes)
+header: 11/1 Assignment - Wireframe
 ---
-    <img src="Info2rd-1.jpg" width="100%" />
-    <img src="Info2rd-12.jpg" width="100%" />
-    <a href="https://bl.ocks.org/kerryrodden/7090426" target="_blank">Sunburst w/breadcurbs</a>
-    <img src="d3sunburst.jpg" width="" />
-    <img src="Info2rd-13.jpg" width="100%" />
-
-  <!-- <svg width="600" height="1100"></svg> -->
-  <div class="container"></div>
+    <a href="data-viz.html">Wiframe</a>
+    <br />
+  <!-- <div class="container"></div> -->
 
   <script>
+  		var avgQ2ByCountry = [];
 
-  		var drawTest = function(data) {
+  		var drawGrad = function(data) {
+  			
+  			var svg = d3.select("body main div.container").append("svg").attr("width", 90).attr("height", 200);
+
+  			//var rects = svg.selectAll("rect").data(data);
+
+
+  			//console.log(data.values.length);
+
+  			for (var i = 0; i < data.values.length; i++) {
+  				var rects = svg.selectAll("rect").data(data.values[i].values);
+
+  				console.log(rects);
+
+  				var dataExtent = d3.extent(data, function(d, i) {
+			      return d.values.length;
+			    });
+
+			    var radius = d3.scaleLinear()
+			    .domain(dataExtent)
+			    .range(["#002901", "#C0E2C1"]);
+
+	  			rects.enter().append("rect")
+	  			.attr("x", function(d, i) {
+	  				return 10 + (3*(i%25));
+	  			})
+	  			.attr("y", function(d, i) {
+	  				return 10 + (3 * Math.floor(i/25))
+	  			})
+	  			.attr("width", 2)
+	  			.attr("height", 2)
+	  			.attr("fill", function(d, i) {
+
+	  				return radius(d["Q2. Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  The top represents the best possible life for you; the bottom, the worst possible life.  On which step do you feel you personally stand at present time?"]);
+	  			});
+  			}
+
+  			// var dataExtent = d3.extent(data, function(d, i) {
+		   //    return d.values.length;
+		   //  });
+
+		   //  var radius = d3.scaleLinear()
+		   //  .domain([0, 10])
+		   //  .range(["#002901", "#C0E2C1"]);
+
+  			// rects.enter().append("rect")
+  			// .attr("x", function(d, i) {
+  			// 	return 10 + (3*(i%25));
+  			// })
+  			// .attr("y", function(d, i) {
+  			// 	return 10 + (3 * Math.floor(i/25))
+  			// })
+  			// .attr("width", 2)
+  			// .attr("height", 2)
+  			// .attr("fill", function(d, i) {
+
+
+  			// 	return radius(d["Q2. Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  The top represents the best possible life for you; the bottom, the worst possible life.  On which step do you feel you personally stand at present time?"]);
+  			// });
+  		}
+
+  		var drawAvg = function(data) {
+  			var svg = d3.select("body main div.container").append("svg").attr("width", 600).attr("height", 1000);
+
+  			var rects = svg.selectAll("rect").data(data);
+
+
+		    var radius = d3.scaleLinear()
+		    .domain([2, 5, 8])
+		    .range(["#F00", "#ff0", "#00F"]);
+
+  			rects.enter().append("rect")
+  			.attr("x", function(d, i) {
+  				return 10 + (75*(i%8));
+  			})
+  			.attr("y", function(d, i) {
+  				return 10 + (75 * Math.floor(i/8))
+  			})
+  			.attr("width", 50)
+  			.attr("height", 50)
+  			.attr("fill", function(d, i) {
+  				return radius(avgQ2ByCountry[i]);
+  			});
+  		}
+
+  		var drawPix = function(data) {
   			
   			var svg = d3.select("body main div.container").append("svg").attr("width", 90).attr("height", 200);
 
@@ -110,6 +191,15 @@ header: 10/25 Assignment - Visualize Data (Global Attitudes)
 		  	})
 		  	.entries(data);
 
+		  	var nestByCnQ2 = d3.nest()
+		  	.key(function(d, i) {
+		  		return d.Country;
+		  	})
+		  	.key(function(d, i) {
+		  		return d["Q2. Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  The top represents the best possible life for you; the bottom, the worst possible life.  On which step do you feel you personally stand at present time?"];
+		  	})
+		  	.entries(data);
+
 		  	var totalPpCountry = [];
 		  	for (var i = 0; i < nestByCountry.length; i++) {
 			  	totalPpCountry.push(nestByCountry[i].values.length);
@@ -136,7 +226,7 @@ header: 10/25 Assignment - Visualize Data (Global Attitudes)
 	  			// console.log(nestByQ1[0].values[i]);
 	  		}
 
-	  		var avgQ2ByCountry = [];
+	  		//var avgQ2ByCountry = [];
 	  		for (var i = 0; i < nestByCountry.length; i++) {
 	  			var temp = 0;
 	  			var total = nestByCountry[i].values.length;
@@ -182,8 +272,8 @@ header: 10/25 Assignment - Visualize Data (Global Attitudes)
 	  		}
 
 		  	console.log(nestByCountry);
-		  	console.log(modeQ2ByCountry);
-		  	// console.log(nestByQ1);
+		  	console.log(nestByCnQ2);
+		  	 console.log(avgQ2ByCountry);
 		  	// console.log(totalPpCountry);
 		  	// console.log(totalQ1TyppCountry);
 		  	// console.log(getPercentArray(totalQ1TyppCountry, totalPpCountry));
@@ -193,9 +283,16 @@ header: 10/25 Assignment - Visualize Data (Global Attitudes)
 
 
 		  	//draw(nestByCountry);
-		  	for (var i = 0; i < 44; i++) {
-		  		drawTest(nestByCountry[i].values);
-		  	}
+		  	//drawAvg(nestByCountry);
+		  	drawGrad(nestByCnQ2[0]);
+		  	//console.log(nestByCnQ2[0].values[0])
+		  	// for (var i = 0; i < 44; i++) {
+		  	// 	//drawPix(nestByCountry[i].values);
+
+		  	// 	for(var j = 0; i < 11; i++) {
+		  	// 		drawGrad(nestByCnQ2[i].values[j]);
+		  	// 	}
+		  	// }
 	    });
   </script>
 
