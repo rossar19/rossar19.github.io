@@ -8,65 +8,106 @@ sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
 minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
 commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 
-<div class="wrapper"></div>
+<div class="main-wrapper--countries"></div>
+<div class="main-wrapper--data"></div>
 
 <script>
 	var pageTitle = "Header";
-	var drawCountries = function() {
-		d3.select('.wrapper').selectAll("*").remove();
-		d3.select('.back-btn').remove();
-		d3.select('.data-header').text(pageTitle);
-		for (var i = 0; i < 45; i++) {
-			var country = d3.select('.wrapper')
-				.append("div")
-				.attr("id", "c" + i)
-				.attr("class", "country");
+	var avgQ2ByCountry = [];
+	var nestByChildren;
+	var nestByCountry;
 
-			var name = country.append("h4")
-				.attr("class", "country--name")
-				.text("Name " + i);
+	var drawAvg = function(data) {
+		var svg = d3.select(".main-wrapper--countries").append("svg").attr("class", "country--svg");
 
-			var block = country.append("div")
-				.attr("class", "country--block");
+		var rects = svg.selectAll("rect").data(data);
+		var nameText = svg.selectAll("text").data(data);
 
-			var id = "#c" + i;
+
+	    var radius = d3.scaleLinear()
+	    .domain([2, 5, 8])
+	    .range(["#F00", "#00F", "#0F0"]);
+
+		rects.enter().append("rect")
+		.attr("id", function(d, i) {
+			return "c" + i;
+		})
+		.attr("class", "country")
+		.attr("x", function(d, i) {
+			return 20 + (120*(i%10));
+		})
+		.attr("y", function(d, i) {
+			return 20 + (190 * Math.floor(i/10))
+		})
+		.attr("width", 100)
+		.attr("height", 150)
+		.attr("fill", function(d, i) {
+			return radius(avgQ2ByCountry[i]);
+		});
+
+
+	    nameText.enter().append("text")
+	    .attr("x", function(d, i) {
+	      return 20 + (120*(i%10));
+	    })
+	    .attr("y", function(d, i) {
+	    	return 15 + (190 * Math.floor(i/10));
+	    })
+	    .attr("id", function(d, i) {
+	    	return "L" + i;
+	    })
+	    .attr("class", "country--name")
+	    .text(function(d) {
+	    	return d.key;
+	    });
+
+	    for (var n in data) {
+	    	var id = "#c" + n;
 
 			d3.select(id).on("click", function(e) {
-				d3.select(".data-header")
-				.text(
-					d3.select(this)
-					.select(".country--name")
-					.text()
-				);
+				var i = this.id.replace("c", "");
+				d3.select(".data-header").text(data[i].key);
 
-				d3.select(".wrapper").selectAll("*").remove();
+				d3.select(".main-wrapper--countries").style("display", "none");
+				d3.select(".main-wrapper--data").selectAll("*").remove();
 
 				addFilterBtns();
+				d3.select(".main-wrapper--data").style("display", "block");
 			});
-		}
+	    }
 	}
 
 	var addFilterBtns = function() {
-		var btnWrap = d3.select(".wrapper")
+		var btnWrap = d3.select(".main-wrapper--data")
 			.append("div")
 			.attr("class", "btn-wrapper");
 
-		var dataWrap = d3.select(".wrapper")
+		var dataWrap = d3.select(".main-wrapper--data")
 			.append("div")
 			.attr("class", "data-wrapper");
 
 		d3.select(".data-copy")
 			.append("a")
 			.attr("class", "back-btn")
-			.attr("href", "javascript:drawCountries()")
+			.attr("href", "javascript:goBack()")
 			.text("Choose a different country");
+
+		var getChildArr = function(data) {
+			var arr = [];
+			for (var n in data) {
+				if (data[n].key < 98 && data[n].key != "") {
+					arr.push(data[n].key);
+				}
+			}
+			return arr;
+		}
 
 		var filters = {
 			"Sex": ["Male", "Female"],
 			"Age": ["Under 18", "18-24", "25-44", "45-60", "Over 60"],
 			"Job Status": ["In paid employment", "Unemployed and looking for work", "Student", "Apprentice or trainee", "Retired", "Unemployed and not looking for work"],
 			"Marital Status": ["Married", "Legal Civil Union", "Widowed", "Divorced", "Separated", "None of these"],
-			"# of Children": [0,1,2,3,4,5,6]
+			"# of Children": getChildArr(nestByChildren).sort(function(a,b) {return a-b})
 		};
 
 		for (var n in filters) {
@@ -92,18 +133,97 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		for (var n in arr) {
 			d3.select(".data-wrapper").append("span").attr("class", "category").text(arr[n]);
 		}
+		drawClusters(nestByCountry);
 	}
 
-	drawCountries();
+	var goBack = function() {
+		d3.select('.back-btn').remove();
+		d3.select('.data-header').text(pageTitle);
+		d3.select('.main-wrapper--data').style("display", "none");
+		d3.select('.main-wrapper--countries').style("display", "block");
+	}
+
+	var drawClusters = function(data) {
+		//d3.select(".data-wrapper").select("svg").remove();
+		var simulation = d3.forceSimulation()
+            .force("collide",d3.forceCollide( function(d){return d.r + 8 }).iterations(106) )
+            .force("charge", d3.forceManyBody())
+            .force("center", d3.forceCenter(600 / 2, 300 / 2))
+            .force("y", d3.forceY(0).strength(0.5))
+            .force("x", d3.forceX(0).strength(0.5));
+
+		var svg = d3.select(".data-wrapper").append("svg").attr("width", 600).attr("height", 600);
+		var circles = svg.selectAll("circle").data(data);
+
+		var circle = circles.enter()
+			.append("circle")
+			.attr("cx", 50)
+			.attr("cy", 150)
+			.attr("r", 5)
+			.attr("fill", "black");
+            // .call(d3.drag()
+            //     .on("start", dragstarted)
+            //     .on("drag", dragged)
+            //     .on("end", dragended));
+
+        var ticked = function() {
+            circle
+                .attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; });
+        }  
+        
+        simulation
+            .nodes(data)
+            .on("tick", ticked);
+
+
+        // function dragstarted(d) {
+        //     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        //     d.fx = d.x;
+        //     d.fy = d.y;
+        // }
+        
+        // function dragged(d) {
+        //     d.fx = d3.event.x;
+        //     d.fy = d3.event.y;
+        // }
+        
+        // function dragended(d) {
+        //     if (!d3.event.active) simulation.alphaTarget(0);
+        //     d.fx = null;
+        //     d.fy = null;
+        // } 
+	}
 
 	d3.csv("Global Attitudes - shortCSV.csv", function(error, data) {
 
-	    	var nestByCountry = d3.nest()
-	    	.key(function(d, i) {
-	    		return d.Country;
-	    	})
-	    	.entries(data);
+		nestByCountry = d3.nest()
+		.key(function(d, i) {
+			return d.Country;
+		})
+		.entries(data);
 
-		  	console.log(nestByCountry);
-	    });
+		nestByChildren = d3.nest()
+		.key(function(d, i) {
+			return d["Q157. How many children have you had?  Please count all your biological children who were born at any time in your life. [In Russia: but do not count adopted children or stepchildren]."];
+		})
+		.entries(data);
+
+		//var avgQ2ByCountry = [];
+  		for (var i = 0; i < nestByCountry.length; i++) {
+  			var temp = 0;
+  			var total = nestByCountry[i].values.length;
+  			for (var j = 0; j < nestByCountry[i].values.length; j++) {
+  				var val = nestByCountry[i].values[j]["Q2. Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  The top represents the best possible life for you; the bottom, the worst possible life.  On which step do you feel you personally stand at present time?"];
+  				if (!isNaN(parseInt(val)) && parseInt(val) != 98 && parseInt(val) != 99) {
+  					temp = temp + parseInt(val);
+  				} else { total = total - 1; }
+  			}
+  			var average = temp / total;
+  			avgQ2ByCountry.push(average);
+  		}
+
+	  	console.log(nestByCountry);
+	  	drawAvg(nestByCountry);
+	});
 </script>
