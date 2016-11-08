@@ -14,8 +14,12 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 <script>
 	var pageTitle = "Header";
 	var avgQ2ByCountry = [];
-	var nestByChildren;
-	var nestByCountry;
+	var childrenNest;
+	var countryNest;
+	var genderNest;
+	var ageNest;
+	var employmentNest;
+	var relationshipNest;
 
 	var drawAvg = function(data) {
 		var svg = d3.select(".main-wrapper--countries").append("svg").attr("class", "country--svg");
@@ -94,20 +98,29 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 
 		var getChildArr = function(data) {
 			var arr = [];
-			for (var n in data) {
-				if (data[n].key < 98 && data[n].key != "") {
-					arr.push(data[n].key);
+
+			if (isNaN(parseInt(data[0].key))) {
+				for (var n in data) {
+					if (data[n].key != "Refused" && data[n].key != "Dont know") {
+						arr.push(data[n].key);
+					}
+				}
+			} else {
+				for (var n in data) {
+					if (data[n].key < 98 && data[n].key != "") {
+						arr.push(data[n].key);
+					}
 				}
 			}
 			return arr;
 		}
 
 		var filters = {
-			"Sex": ["Male", "Female"],
-			"Age": ["Under 18", "18-24", "25-44", "45-60", "Over 60"],
-			"Job Status": ["In paid employment", "Unemployed and looking for work", "Student", "Apprentice or trainee", "Retired", "Unemployed and not looking for work"],
-			"Marital Status": ["Married", "Legal Civil Union", "Widowed", "Divorced", "Separated", "None of these"],
-			"# of Children": getChildArr(nestByChildren).sort(function(a,b) {return a-b})
+			"Sex": getChildArr(genderNest),
+			"Age": getChildArr(ageNest).sort(function(a,b) {return a-b}),
+			"Job Status": getChildArr(employmentNest),
+			"Marital Status": getChildArr(relationshipNest),
+			"# of Children": getChildArr(childrenNest).sort(function(a,b) {return a-b})
 		};
 
 		for (var n in filters) {
@@ -133,7 +146,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		for (var n in arr) {
 			d3.select(".data-wrapper").append("span").attr("class", "category").text(arr[n]);
 		}
-		drawClusters(nestByCountry);
+		drawClusters(countryNest, arr.length);
 	}
 
 	var goBack = function() {
@@ -143,78 +156,77 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		d3.select('.main-wrapper--countries').style("display", "block");
 	}
 
-	var drawClusters = function(data) {
-		//d3.select(".data-wrapper").select("svg").remove();
-		var simulation = d3.forceSimulation()
-            .force("collide",d3.forceCollide( function(d){return d.r + 8 }).iterations(106) )
-            .force("charge", d3.forceManyBody())
-            .force("center", d3.forceCenter(600 / 2, 300 / 2))
-            .force("y", d3.forceY(0).strength(0.5))
-            .force("x", d3.forceX(0).strength(0.5));
+	var drawClusters = function(data, clusNum) {
 
-		var svg = d3.select(".data-wrapper").append("svg").attr("width", 600).attr("height", 600);
+		var width = 700,
+		    height = 500;
+		var n = 40, // total number of nodes
+		    m = clusNum; // number of distinct clusters
+		var x = d3.scaleLinear()
+		    .domain([0, m])
+		    .range([150, width]);
+
+		var simulation = d3.forceSimulation()
+            .force("collide",d3.forceCollide( function(d){return 2 }) )
+            .force("charge", d3.forceManyBody().strength(-10))
+            .force("y", d3.forceY(100).strength(0.8))
+            .force("x", d3.forceX(function(d) {
+            		var temp = x(Math.floor(Math.random() * m));
+            		//console.log(temp);
+            		return temp;
+            	})
+            	.strength(0.8));
+
+		var svg = d3.select(".data-wrapper").append("svg").attr("width", width).attr("height", height);
 		var circles = svg.selectAll("circle").data(data);
 
 		var circle = circles.enter()
 			.append("circle")
-			.attr("cx", 50)
-			.attr("cy", 150)
-			.attr("r", 5)
+			.attr("r", 2)
 			.attr("fill", "black");
-            // .call(d3.drag()
-            //     .on("start", dragstarted)
-            //     .on("drag", dragged)
-            //     .on("end", dragended));
 
-        var ticked = function() {
+        var ticked = function(e) {
             circle
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
-        }  
+        }
         
         simulation
             .nodes(data)
             .on("tick", ticked);
-
-
-        // function dragstarted(d) {
-        //     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-        //     d.fx = d.x;
-        //     d.fy = d.y;
-        // }
-        
-        // function dragged(d) {
-        //     d.fx = d3.event.x;
-        //     d.fy = d3.event.y;
-        // }
-        
-        // function dragended(d) {
-        //     if (!d3.event.active) simulation.alphaTarget(0);
-        //     d.fx = null;
-        //     d.fy = null;
-        // } 
 	}
 
 	d3.csv("Global Attitudes - shortCSV.csv", function(error, data) {
 
-		nestByCountry = d3.nest()
-		.key(function(d, i) {
-			return d.Country;
-		})
-		.entries(data);
+		var nestDataBy = function(category) {
+			return d3.nest()
+				.key(function(d, i) {
+					return d[category];
+				})
+				.entries(data);
+		}
 
-		nestByChildren = d3.nest()
-		.key(function(d, i) {
-			return d["Q157. How many children have you had?  Please count all your biological children who were born at any time in your life. [In Russia: but do not count adopted children or stepchildren]."];
-		})
-		.entries(data);
+		
+		var qHappiness = "Q2. Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  The top represents the best possible life for you; the bottom, the worst possible life.  On which step do you feel you personally stand at present time?";
+		var qGender = "Q132. Gender";
+		var qAge = "Q133. How old were you at your last birthday?";
+		var qEmployment = "Q140. Which of the following employment situations best describes your current status?";
+		var qRelationship = "Q153. Are you currently married, in a legal civil union, widowed, divorced, separated, or none of these?";
+		var qChildren = "Q157. How many children have you had?  Please count all your biological children who were born at any time in your life. [In Russia: but do not count adopted children or stepchildren].";
+
+		countryNest = nestDataBy("Country");
+		genderNest = nestDataBy(qGender);
+		ageNest = nestDataBy(qAge);
+		employmentNest = nestDataBy(qEmployment);
+		relationshipNest = nestDataBy(qRelationship);
+		childrenNest = nestDataBy(qChildren);
 
 		//var avgQ2ByCountry = [];
-  		for (var i = 0; i < nestByCountry.length; i++) {
+  		for (var i = 0; i < countryNest.length; i++) {
   			var temp = 0;
-  			var total = nestByCountry[i].values.length;
-  			for (var j = 0; j < nestByCountry[i].values.length; j++) {
-  				var val = nestByCountry[i].values[j]["Q2. Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  The top represents the best possible life for you; the bottom, the worst possible life.  On which step do you feel you personally stand at present time?"];
+  			var total = countryNest[i].values.length;
+  			for (var j = 0; j < countryNest[i].values.length; j++) {
+  				var val = countryNest[i].values[j][qHappiness];
   				if (!isNaN(parseInt(val)) && parseInt(val) != 98 && parseInt(val) != 99) {
   					temp = temp + parseInt(val);
   				} else { total = total - 1; }
@@ -223,7 +235,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
   			avgQ2ByCountry.push(average);
   		}
 
-	  	console.log(nestByCountry);
-	  	drawAvg(nestByCountry);
+	  	console.log(countryNest);
+	  	drawAvg(countryNest);
 	});
 </script>
