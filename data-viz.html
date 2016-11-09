@@ -13,6 +13,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 
 <script>
 	var pageTitle = "Header";
+	var currCountryIndex;
 	var avgQ2ByCountry = [];
 	var childrenNest;
 	var countryNest;
@@ -20,6 +21,16 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 	var ageNest;
 	var employmentNest;
 	var relationshipNest;
+	var happyCountryNest;
+
+	var qHappiness = "Q2. Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  The top represents the best possible life for you; the bottom, the worst possible life.  On which step do you feel you personally stand at present time?";
+	var qGender = "Q132. Gender";
+	var qAge = "Q133. How old were you at your last birthday?";
+	var qEmployment = "Q140. Which of the following employment situations best describes your current status?";
+	var qRelationship = "Q153. Are you currently married, in a legal civil union, widowed, divorced, separated, or none of these?";
+	var qChildren = "Q157. How many children have you had?  Please count all your biological children who were born at any time in your life. [In Russia: but do not count adopted children or stepchildren].";
+
+	var simulation;
 
 	var drawAvg = function(data) {
 		var svg = d3.select(".main-wrapper--countries").append("svg").attr("class", "country--svg");
@@ -71,6 +82,9 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 			d3.select(id).on("click", function(e) {
 				var i = this.id.replace("c", "");
 				d3.select(".data-header").text(data[i].key);
+
+				currCountryIndex = i;
+				console.log(currCountryIndex);
 
 				d3.select(".main-wrapper--countries").style("display", "none");
 				d3.select(".main-wrapper--data").selectAll("*").remove();
@@ -146,7 +160,8 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		for (var n in arr) {
 			d3.select(".data-wrapper").append("span").attr("class", "category").text(arr[n]);
 		}
-		drawClusters(countryNest, arr.length);
+		
+		drawClusters(countryNest, arr.length, currCountryIndex);
 	}
 
 	var goBack = function() {
@@ -154,36 +169,59 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		d3.select('.data-header').text(pageTitle);
 		d3.select('.main-wrapper--data').style("display", "none");
 		d3.select('.main-wrapper--countries').style("display", "block");
+
+		simulation.stop();
+		d3.select(".data-wrapper svg").remove();
 	}
 
-	var drawClusters = function(data, clusNum) {
+	var drawClusters = function(data, clusNum, countIndex) {
+		if (simulation != null) { simulation.stop(); }
 
-		var width = 700,
+		var width = 900,
 		    height = 500;
-		var n = 40, // total number of nodes
-		    m = clusNum; // number of distinct clusters
+		var m = clusNum; // number of distinct clusters
 		var x = d3.scaleLinear()
 		    .domain([0, m])
 		    .range([150, width]);
 
-		var simulation = d3.forceSimulation()
-            .force("collide",d3.forceCollide( function(d){return 2 }) )
-            .force("charge", d3.forceManyBody().strength(-10))
-            .force("y", d3.forceY(100).strength(0.8))
-            .force("x", d3.forceX(function(d) {
+		    //set cx and cy for data nodes
+		    // do position then try clustering
+
+		simulation = d3.forceSimulation()
+            .force("collide",d3.forceCollide(2))
+            .force("charge", d3.forceManyBody().strength(-5))
+            .force("y", d3.forceY(function(d, i) {
+	            	var temp = x(Math.floor(Math.random() * (m/3)));
+	            	return temp;
+	            })
+            	.strength(0.5))
+            .force("x", d3.forceX(function(d, i) {
+            		//console.log(20 + (120*(i%3)));
             		var temp = x(Math.floor(Math.random() * m));
             		//console.log(temp);
             		return temp;
             	})
-            	.strength(0.8));
+            	.strength(0.5));
 
 		var svg = d3.select(".data-wrapper").append("svg").attr("width", width).attr("height", height);
-		var circles = svg.selectAll("circle").data(data);
+		var circles = svg.selectAll("circle").data(data[countIndex].values);
+
+
+	    var color = d3.scaleLinear()
+	    .domain([0, 10])
+	    .range(["#0C00FF", "#FF9C00"]);
 
 		var circle = circles.enter()
 			.append("circle")
 			.attr("r", 2)
-			.attr("fill", "black");
+			.attr("fill", function(d, i) {
+				var happy = d[qHappiness];
+				if (parseInt(happy) < 97 && happy != "") {
+					return color(happy);
+				} else {
+					return "black";
+				}
+			});
 
         var ticked = function(e) {
             circle
@@ -192,7 +230,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
         }
         
         simulation
-            .nodes(data)
+            .nodes(data[countIndex].values)
             .on("tick", ticked);
 	}
 
@@ -206,20 +244,33 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 				.entries(data);
 		}
 
-		
-		var qHappiness = "Q2. Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  The top represents the best possible life for you; the bottom, the worst possible life.  On which step do you feel you personally stand at present time?";
-		var qGender = "Q132. Gender";
-		var qAge = "Q133. How old were you at your last birthday?";
-		var qEmployment = "Q140. Which of the following employment situations best describes your current status?";
-		var qRelationship = "Q153. Are you currently married, in a legal civil union, widowed, divorced, separated, or none of these?";
-		var qChildren = "Q157. How many children have you had?  Please count all your biological children who were born at any time in your life. [In Russia: but do not count adopted children or stepchildren].";
-
 		countryNest = nestDataBy("Country");
 		genderNest = nestDataBy(qGender);
 		ageNest = nestDataBy(qAge);
 		employmentNest = nestDataBy(qEmployment);
 		relationshipNest = nestDataBy(qRelationship);
 		childrenNest = nestDataBy(qChildren);
+		var nestHappyInCountry = function() {
+			return d3.nest()
+				.key(function(d, i) {
+					return d.Country;
+				})
+				.key(function(d, i) {
+					return d[qHappiness];
+				})
+				.entries(data);
+		}
+
+		happyCountryNest = nestHappyInCountry();
+
+		console.log(nestHappyInCountry());
+
+		/*
+			pass country with happy nest to function
+			get total number of participants for that country
+			use scalelinear to produce happy circle size based on number of people
+			use scalelinear to get color of happy circle
+		*/
 
 		//var avgQ2ByCountry = [];
   		for (var i = 0; i < countryNest.length; i++) {
