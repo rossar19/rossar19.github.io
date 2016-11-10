@@ -13,16 +13,22 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 
 <script>
 	var pageTitle = "Header";
-	var currCountryIndex;
-	var avgQ2ByCountry = [];
+	var cIndex;              // Index of country currently viewed
+	var avgQ2ByCountry = []; // Array of each country's average happy rating
+
+	// Data nested by categories
 	var childrenNest;
 	var countryNest;
+	var happyNest;
 	var genderNest;
 	var ageNest;
 	var employmentNest;
 	var relationshipNest;
 	var happyCountryNest;
 
+	var filters; // Categories to filter data
+
+	// Keys in data
 	var qHappiness = "Q2. Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  The top represents the best possible life for you; the bottom, the worst possible life.  On which step do you feel you personally stand at present time?";
 	var qGender = "Q132. Gender";
 	var qAge = "Q133. How old were you at your last birthday?";
@@ -30,19 +36,30 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 	var qRelationship = "Q153. Are you currently married, in a legal civil union, widowed, divorced, separated, or none of these?";
 	var qChildren = "Q157. How many children have you had?  Please count all your biological children who were born at any time in your life. [In Russia: but do not count adopted children or stepchildren].";
 
-	var simulation;
+	var simulation; // Force simulation used for particles
 
+	// Draw each country and color based on average happiness
 	var drawAvg = function(data) {
-		var svg = d3.select(".main-wrapper--countries").append("svg").attr("class", "country--svg");
+		var svg = d3.select(".main-wrapper--countries")
+			.append("svg")
+			.attr("class", "country--svg");
 
-		var rects = svg.selectAll("rect").data(data);
-		var nameText = svg.selectAll("text").data(data);
+		var rects = svg.selectAll("rect").data(data);     // Element for country
+		var nameText = svg.selectAll("text").data(data);  // Element for country's name
 
-
-	    var radius = d3.scaleLinear()
+		// Assign color based on average
+	    var color = d3.scaleLinear()
 	    .domain([2, 5, 8])
-	    .range(["#F00", "#00F", "#0F0"]);
+	    .range(["#000", "#91719a", "#f5c750"]);
 
+	    // "#000", "#46535a", "#465f2c", 
+	    // 		"#984350", "#91719a", "#f5c750", 
+	    // 		"#a8c9d9", "#c1dea0", "#d796a5", 
+	    // 		"#cdb5d7", "#f3d998"
+
+	    // "#F00", "#00F", "#0F0"
+
+	    // Add rectangle to SVG
 		rects.enter().append("rect")
 		.attr("id", function(d, i) {
 			return "c" + i;
@@ -52,15 +69,27 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 			return 20 + (120*(i%10));
 		})
 		.attr("y", function(d, i) {
-			return 20 + (190 * Math.floor(i/10))
+			return 20 + (190 * Math.floor(i/10));
 		})
 		.attr("width", 100)
 		.attr("height", 150)
 		.attr("fill", function(d, i) {
-			return radius(avgQ2ByCountry[i]);
+			return color(avgQ2ByCountry[i]);
+		})
+		.on("mouseover", function(d, i) {
+			var x = d3.select(this).attr("x");
+			var y = d3.select(this).attr("y");
+			d3.select(".main-wrapper--countries")
+				.append("span")
+				.attr("class", "avg")
+				.text(avgQ2ByCountry[i].toFixed(1));
+		})
+		.on("mouseout", function(d, i) {
+			d3.select(".main-wrapper--countries .avg")
+				.remove();
 		});
 
-
+		// Add Text element to SVG
 	    nameText.enter().append("text")
 	    .attr("x", function(d, i) {
 	      return 20 + (120*(i%10));
@@ -76,31 +105,37 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 	    	return d.key;
 	    });
 
+	    createOnClick(data);
+	}
+
+	// Creates an on click function for each item in data
+	function createOnClick(data) {
 	    for (var n in data) {
 	    	var id = "#c" + n;
+	    	var mDataWrapper = d3.select(".main-wrapper--data");
 
 			d3.select(id).on("click", function(e) {
-				var i = this.id.replace("c", "");
-				d3.select(".data-header").text(data[i].key);
-
-				currCountryIndex = i;
-				console.log(currCountryIndex);
+				cIndex = this.id.replace("c", "");
+				d3.select(".data-header").text(data[cIndex].key);
 
 				d3.select(".main-wrapper--countries").style("display", "none");
-				d3.select(".main-wrapper--data").selectAll("*").remove();
 
+				mDataWrapper.selectAll("*").remove();
+				mDataWrapper.style("display", "block");
 				addFilterBtns();
-				d3.select(".main-wrapper--data").style("display", "block");
 			});
 	    }
 	}
 
-	var addFilterBtns = function() {
-		var btnWrap = d3.select(".main-wrapper--data")
+	// Adds filter buttons
+	function addFilterBtns() {
+	    var mDataWrapper = d3.select(".main-wrapper--data");
+
+		var btnWrap = mDataWrapper
 			.append("div")
 			.attr("class", "btn-wrapper");
 
-		var dataWrap = d3.select(".main-wrapper--data")
+		var dataWrap = mDataWrapper
 			.append("div")
 			.attr("class", "data-wrapper");
 
@@ -110,7 +145,8 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 			.attr("href", "javascript:goBack()")
 			.text("Choose a different country");
 
-		var getChildArr = function(data) {
+		// Return an array of keys from data's children
+		function getChildArr(data) {
 			var arr = [];
 
 			if (isNaN(parseInt(data[0].key))) {
@@ -129,7 +165,8 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 			return arr;
 		}
 
-		var filters = {
+		filters = {
+			"Happy": getChildArr(happyNest),
 			"Sex": getChildArr(genderNest),
 			"Age": getChildArr(ageNest).sort(function(a,b) {return a-b}),
 			"Job Status": getChildArr(employmentNest),
@@ -137,34 +174,63 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 			"# of Children": getChildArr(childrenNest).sort(function(a,b) {return a-b})
 		};
 
+		// Create a button for each item in filters and create onclick functions
 		for (var n in filters) {
 			var btn = btnWrap.append("button")
 			.attr("id", n)
 			.attr("class", "filter-btn")
 			.text(n);
 
-			var html = d3.select(".data-wrapper");
-
+			// If first load, display subcategories of first item in filters
 			if (d3.select(".data-wrapper").html() == "") {
-				displaySubs(filters[n]);
+				displaySubs(filters[n], n);
 			}
 
+			// On click, clear old children and add new subcategories
 			btn.on("click", function(e) {
 				dataWrap.selectAll("*").remove();
-				displaySubs(filters[this.id]);
+				displaySubs(filters[this.id], this.id);
 			});
 		}
 	}
 
-	var displaySubs = function(arr) {
+	// Add subcategories to page
+	function displaySubs(arr, filter) {
+		var objArr = [];
+
 		for (var n in arr) {
-			d3.select(".data-wrapper").append("span").attr("class", "category").text(arr[n]);
+			d3.select(".data-wrapper").append("span")
+				.attr("class", "category")
+				.text(arr[n]);
 		}
-		
-		drawClusters(countryNest, arr.length, currCountryIndex);
+
+		setSubcatCoords(objArr);
+		drawClusters(countryNest, objArr, cIndex, filter);
 	}
 
-	var goBack = function() {
+	// Calculate subcategory coordinates for data positioning, and push object to array 
+	function setSubcatCoords(arr) {
+		d3.selectAll(".category").each(function() {
+			var w = this.getBoundingClientRect().width;
+			var h = this.getBoundingClientRect().height;
+			var l = this.getBoundingClientRect().left;
+			var t = this.getBoundingClientRect().top;
+
+			var xOffset = d3.select(".data-wrapper").node().getBoundingClientRect().left;
+			var yOffset = d3.select(".data-wrapper").node().getBoundingClientRect().top;
+
+			var temp = {
+				"key": d3.select(this).text(),
+				"x": l + (w/2) - xOffset,
+				"y": t + (h/2) - yOffset
+			}
+
+			arr.push(temp);
+		});
+	}
+
+	// Return to homepage
+	function goBack() {
 		d3.select('.back-btn').remove();
 		d3.select('.data-header').text(pageTitle);
 		d3.select('.main-wrapper--data').style("display", "none");
@@ -174,32 +240,62 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		d3.select(".data-wrapper svg").remove();
 	}
 
-	var drawClusters = function(data, clusNum, countIndex) {
+	// Draw each participants response and place under subcategories
+	function drawClusters(data, objArr, countIndex, filter) {
 		if (simulation != null) { simulation.stop(); }
 
-		var width = 900,
-		    height = 500;
-		var m = clusNum; // number of distinct clusters
-		var x = d3.scaleLinear()
-		    .domain([0, m])
-		    .range([150, width]);
 
-		    //set cx and cy for data nodes
-		    // do position then try clustering
+		var filKey;  // Data key associated with active filter
+		var width = 900,
+		    height = d3.select(".data-wrapper")
+		    	.node()
+		    	.getBoundingClientRect()
+		    	.height + 100;
+
+		switch(filter) {
+			case "Happy":
+				filKey = qHappiness;
+				break;
+			case "Sex":
+				filKey = qGender;
+				break;
+			case "Age":
+				filKey = qAge;
+				break;
+			case "Job Status":
+				filKey = qEmployment;
+				break;
+			case "Marital Status":
+				filKey = qRelationship;
+				break;
+			case "# of Children":
+				filKey = qChildren;
+				break;
+			default:
+				filKey = "Something went wrong...";
+		}
 
 		simulation = d3.forceSimulation()
             .force("collide",d3.forceCollide(2))
             .force("charge", d3.forceManyBody().strength(-5))
-            .force("y", d3.forceY(function(d, i) {
-	            	var temp = x(Math.floor(Math.random() * (m/3)));
+            .force("y", d3.forceY(function(d) {
+            		var temp = -999;  // Lazily hide the things that don't apply
+            		for (var i = 0; i < objArr.length; i++) {
+            			if (d[filKey].includes(objArr[i].key)) {
+            				temp = objArr[i].y;
+            			}
+            		}
 	            	return temp;
 	            })
             	.strength(0.5))
-            .force("x", d3.forceX(function(d, i) {
-            		//console.log(20 + (120*(i%3)));
-            		var temp = x(Math.floor(Math.random() * m));
-            		//console.log(temp);
-            		return temp;
+            .force("x", d3.forceX(function(d) {
+            		var temp = -999;
+            		for (var i = 0; i < objArr.length; i++) {
+            			if (d[filKey].includes(objArr[i].key)) {
+            				temp = objArr[i].x;
+            			}
+            		}
+	            	return temp;
             	})
             	.strength(0.5));
 
@@ -207,9 +303,16 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		var circles = svg.selectAll("circle").data(data[countIndex].values);
 
 
+	    // var color = d3.scaleLinear()
+	    // .domain([0, 10])
+	    // .range(["#0C00FF", "#FF9C00"]);
+
 	    var color = d3.scaleLinear()
-	    .domain([0, 10])
-	    .range(["#0C00FF", "#FF9C00"]);
+	    .domain([0,1,2,3,4,5,6,7,8,9,10])
+	    .range(["#000", "#46535a", "#465f2c", 
+	    		"#984350", "#91719a", "#f5c750", 
+	    		"#a8c9d9", "#c1dea0", "#d796a5", 
+	    		"#cdb5d7", "#f3d998"]);
 
 		var circle = circles.enter()
 			.append("circle")
@@ -223,7 +326,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 				}
 			});
 
-        var ticked = function(e) {
+        function ticked(e) {
             circle
                 .attr("cx", function(d) { return d.x; })
                 .attr("cy", function(d) { return d.y; });
@@ -235,8 +338,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 	}
 
 	d3.csv("Global Attitudes - shortCSV.csv", function(error, data) {
-
-		var nestDataBy = function(category) {
+		function nestDataBy(category) {
 			return d3.nest()
 				.key(function(d, i) {
 					return d[category];
@@ -245,12 +347,13 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		}
 
 		countryNest = nestDataBy("Country");
+		happyNest = nestDataBy(qHappiness);
 		genderNest = nestDataBy(qGender);
 		ageNest = nestDataBy(qAge);
 		employmentNest = nestDataBy(qEmployment);
 		relationshipNest = nestDataBy(qRelationship);
 		childrenNest = nestDataBy(qChildren);
-		var nestHappyInCountry = function() {
+		function nestHappyInCountry() {
 			return d3.nest()
 				.key(function(d, i) {
 					return d.Country;
@@ -263,16 +366,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 
 		happyCountryNest = nestHappyInCountry();
 
-		console.log(nestHappyInCountry());
-
-		/*
-			pass country with happy nest to function
-			get total number of participants for that country
-			use scalelinear to produce happy circle size based on number of people
-			use scalelinear to get color of happy circle
-		*/
-
-		//var avgQ2ByCountry = [];
+		// Calculate average happiness for each country and push to avgQ2ByCountry
   		for (var i = 0; i < countryNest.length; i++) {
   			var temp = 0;
   			var total = countryNest[i].values.length;

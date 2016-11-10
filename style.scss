@@ -32,6 +32,7 @@ body {
 
     &--countries {
       display: block;
+      position: relative;
       .country {
        // width: 100px;
         //height: 150px;
@@ -53,6 +54,11 @@ body {
           height: 100px;
           background-color: gray;
         }
+      }
+      .avg {
+        position: fixed;
+        top: 50;
+        left: 20px;
       }
     }
     &--data {
@@ -80,7 +86,7 @@ body {
           margin: 0 20px;
           display: inline-block;
           width: 25%;
-          height: 150px;
+          height: 200px;
         }
       }
     }
