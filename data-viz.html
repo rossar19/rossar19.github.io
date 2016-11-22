@@ -25,6 +25,11 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 	var employmentNest;
 	var relationshipNest;
 	var happyCountryNest;
+	var countrySexHappy;
+	var countryAgeHappy;
+	var countryEmployHappy;
+	var countryRelHappy;
+	var countryChildHappy;
 
 	var filters; // Categories to filter data
 
@@ -52,6 +57,15 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 	    .domain([2, 5, 8])
 	    .range(["#000", "#91719a", "#f5c750"]);
 
+	    function calculateX(index) {
+	    	return 20 + (120*(index%10));
+	    }
+
+	    function calculateY(index, space) {
+	    	space = (space == null) ? 0 : space;
+	    	return (40 - space) + (200 * Math.floor(index/10));
+	    }
+
 	    // "#000", "#46535a", "#465f2c", 
 	    // 		"#984350", "#91719a", "#f5c750", 
 	    // 		"#a8c9d9", "#c1dea0", "#d796a5", 
@@ -66,10 +80,10 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		})
 		.attr("class", "country")
 		.attr("x", function(d, i) {
-			return 20 + (120*(i%10));
+			return calculateX(i);
 		})
 		.attr("y", function(d, i) {
-			return 20 + (190 * Math.floor(i/10));
+			return calculateY(i);
 		})
 		.attr("width", 100)
 		.attr("height", 150)
@@ -77,11 +91,14 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 			return color(avgQ2ByCountry[i]);
 		})
 		.on("mouseover", function(d, i) {
-			var x = d3.select(this).attr("x");
-			var y = d3.select(this).attr("y");
+			var offset = d3.select(".main-wrapper--countries").node().getBoundingClientRect();
+			var x = parseInt(d3.select(this).attr("x")) + offset.left;
+			var y = parseInt(d3.select(this).attr("y")) + offset.top;
 			d3.select(".main-wrapper--countries")
 				.append("span")
 				.attr("class", "avg")
+				.style("top", y + "px")
+				.style("left", x + "px")
 				.text(avgQ2ByCountry[i].toFixed(1));
 		})
 		.on("mouseout", function(d, i) {
@@ -90,19 +107,27 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		});
 
 		// Add Text element to SVG
-	    nameText.enter().append("text")
+	    var name = nameText.enter().append("text")
 	    .attr("x", function(d, i) {
-	      return 20 + (120*(i%10));
+	      return calculateX(i);
 	    })
 	    .attr("y", function(d, i) {
-	    	return 15 + (190 * Math.floor(i/10));
+	    	return calculateY(i, 5);
 	    })
 	    .attr("id", function(d, i) {
 	    	return "L" + i;
 	    })
 	    .attr("class", "country--name")
-	    .text(function(d) {
-	    	return d.key;
+	    .html(function(d) {
+	    	var html = d.key;
+	    	if (d.key.length > 12) {
+	    		var arr = d.key.split(" ");
+	    		var x = d3.select(this).attr("x");
+	    		html = '<tspan x="' + x + '" dy="-16">' + arr[0] + 
+	    			'</tspan>' + '<tspan x="' + x + '" dy="16">' + 
+	    			arr[1] + '</tspan>';
+	    	}
+	    	return html;
 	    });
 
 	    createOnClick(data);
@@ -166,7 +191,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		}
 
 		filters = {
-			"Happy": getChildArr(happyNest),
+			"Happy": ["Happiness"],
 			"Sex": getChildArr(genderNest),
 			"Age": getChildArr(ageNest).sort(function(a,b) {return a-b}),
 			"Job Status": getChildArr(employmentNest),
@@ -199,10 +224,18 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		var objArr = [];
 
 		for (var n in arr) {
-			d3.select(".data-wrapper").append("span")
+			var cat = d3.select(".data-wrapper").append("span")
 				.attr("class", "category")
-				.text(arr[n]);
+				.attr("id", "cat" + n)
+				.text(arr[n])
+				.on("mouseover", function(e) {
+					console.log("hover");
+				});
 		}
+
+		cat.on("mouseover", function(e) {
+			console.log("hover");
+		});
 
 		setSubcatCoords(objArr);
 		drawClusters(countryNest, objArr, cIndex, filter);
@@ -240,10 +273,71 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		d3.select(".data-wrapper svg").remove();
 	}
 
+	// Calculate the happy percent breakdown of a country
+	// pass country > category > happy rating
+	function calcPercent(country, lvl) {
+		lvl = (lvl == null) ? false : true;
+		var temp = [];
+
+		if (lvl) {
+			var total = 0;
+
+			for (var i in country.values) {
+				total = total + country.values[i].values.length;
+
+				if (parseInt(country.values[i].key) < 97) {
+					obj = {
+						"key": country.values[i].key,
+						"percent": country.values[i].values.length
+					}
+
+					temp.push(obj);
+				}
+			}
+
+			for (var i in temp) {
+				temp[i].percent = ((temp[i].percent / total) * 100).toFixed(2);
+			}
+		} else {
+			for (var i in country.values) {
+				if ((isNaN(parseInt(country.values[i].key))
+						&& country.values[i].key != "Refused" 
+						&& country.values[i].key != "Dont know") ||
+					(parseInt(country.values[i].key) < 97
+						&& country.values[i].key != "")) {
+
+					var total = 0;
+					var oArr = [];
+					var catObj = { "key": country.values[i].key };
+
+					for (var j in country.values[i].values) {
+						if (parseInt(country.values[i].values[j].key) < 97) {
+							total = total + country.values[i].values[j].values.length;
+							var t = {
+								"key": country.values[i].values[j].key,
+								"percent": country.values[i].values[j].values.length
+							}
+
+							oArr.push(t);
+						}
+					}
+
+					for (var i in oArr) {
+						oArr[i].percent = ((oArr[i].percent / total) * 100).toFixed(2);
+					}
+					catObj.breakdown = oArr;
+					temp.push(catObj);
+				}
+			}
+		}
+		return temp;
+	}
+
 	// Draw each participants response and place under subcategories
 	function drawClusters(data, objArr, countIndex, filter) {
 		if (simulation != null) { simulation.stop(); }
 		var filKey;  // Data key associated with active filter
+		var percents;
 		var width = 900,
 		    height = d3.select(".data-wrapper")
 		    	.node()
@@ -266,24 +360,31 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		switch(filter) {
 			case "Happy":
 				filKey = qHappiness;
+				percents = happyCountryNest[countIndex];
 				break;
 			case "Sex":
 				filKey = qGender;
+				percents = countrySexHappy[countIndex];
 				break;
 			case "Age":
 				filKey = qAge;
+				percents = countryAgeHappy[countIndex];
 				break;
 			case "Job Status":
 				filKey = qEmployment;
+				percents = countryEmployHappy[countIndex];
 				break;
 			case "Marital Status":
 				filKey = qRelationship;
+				percents = countryRelHappy[countIndex];
 				break;
 			case "# of Children":
 				filKey = qChildren;
+				percents = countryChildHappy[countIndex];
 				break;
 			default:
 				filKey = "Something went wrong...";
+				percents = "God, what is happening";
 		}
 
 		simulation = d3.forceSimulation()
@@ -292,8 +393,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
             .force("y", d3.forceY(function(d) {
             		var temp = -999;  // Lazily hide the things that don't apply
             		for (var i = 0; i < objArr.length; i++) {
-            			if (d[filKey].includes(objArr[i].key)) {
-
+            			if (d[filKey].includes(objArr[i].key) || filKey == qHappiness) {
             				// Add first data point of color group to array and gravitate to center
             				if (d[qHappiness] < 97 
             					&& clusters[d[qHappiness]][objArr[i].key] == null) {
@@ -311,11 +411,11 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
             		}
 	            	return temp;
 	            })
-            	.strength(0.5))
+            	.strength(0.7))
             .force("x", d3.forceX(function(d) {
             		var temp = -999;
             		for (var i = 0; i < objArr.length; i++) {
-            			if (d[filKey].includes(objArr[i].key)) {
+            			if (d[filKey].includes(objArr[i].key) || filKey == qHappiness) {
             				if (d[qHappiness] < 97 
             					&& clusters[d[qHappiness]][objArr[i].key].point == d) {
             					temp = objArr[i].x;
@@ -326,37 +426,15 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
             		}
 	            	return temp;
             	})
-            	.strength(0.5))
+            	.strength(0.7))
             .force("cluster", clustering);
 
-        // cluster the color groups
-        function clustering(alpha) {
-		    circle.each(function(d) {
-		    	if (d[filKey] != "Refused" 
-		    		&& d[filKey] != "Dont know" 
-		    		&& d[filKey] != "" 
-		    		&& d[qHappiness] < 97
-		    		&& (isNaN(d[filKey]) || d[filKey] < 97))
-		    	{
-		    		// magic math stuff
-		        	var cluster = clusters[d[qHappiness]][d[filKey]];
-				    var x = d.x - cluster.x,
-				        y = d.y - cluster.y,
-				        l = Math.sqrt(x * x + y * y),
-				        r = 4;
-				    if (l !== r) {
-				    	l = (l - r) / l * alpha;
-				        d.x -= x *= l;
-				        d.y -= y *= l;
-				        cluster.x += x;
-				        cluster.y += y;
-				    }
-		    	}
-		    });
-		}
 		
 		var svg = d3.select(".data-wrapper").append("svg").attr("width", width).attr("height", height);
 		var circles = svg.selectAll("circle").data(data[countIndex].values);
+		var centers = svg.selectAll("circle").data(objArr);
+
+		//console.log(happyCountryNest);
 
 
 	    // var color = d3.scaleLinear()
@@ -370,6 +448,23 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 	    		"#a8c9d9", "#c1dea0", "#d796a5", 
 	    		"#cdb5d7", "#f3d998"]);
 
+	    /* "#000", "#46535a", "#465f2c", 
+	    		"#984350", "#91719a", "#f5c750", 
+	    		"#a8c9d9", "#c1dea0", "#d796a5", 
+	    		"#cdb5d7", "#f3d998" 
+			
+			"#f3d998", "#c1dea0", "#cdb5d7", 
+	    		"#a8c9d9", "#d796a5", "#8bcf82", 
+	    		"#ec5eb2", "#48c1ef", "#4dff33", 
+	    		"#ffb31a", "#fff100"
+
+	    		*/
+
+	    var colorArr = [];
+	    for (var i = 0; i < 11; i++) {
+	    	colorArr.push(color(i));
+	    }
+
 		var circle = circles.enter()
 			.append("circle")
 			.attr("r", 2)
@@ -381,6 +476,78 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 					return "black";
 				}
 			});
+
+		var center = centers.enter()
+			.append("circle")
+			.attr("id", function(d) {
+				return "cent" + d.key;
+			})
+			.attr("r", 50)
+			.attr("fill", "transparent")
+			.attr("cx", function(d) {
+				return d.x;
+			})
+			.attr("cy", function(d) {
+				return d.y;
+			})
+			.on("mouseover", function(d) {
+				// d3.select(this).attr("fill", "red");
+				var pw = d3.select(".data-wrapper").append("div").attr("class", "percent-wrap");
+				if (filKey == qHappiness) {
+					var cp = calcPercent(percents, true);
+					for (var i in cp) {
+						pw.append("div").attr("class", "percent").html(
+							cp[i].key + ": " +
+							cp[i].percent + "%");
+					}
+				} else {
+					var cp = calcPercent(percents);
+					for (var i in cp) {
+						if (d.key == cp[i].key) {
+							for (var j in cp[i].breakdown) {
+								pw.append("div").attr("class", "percent").html(
+									cp[i].breakdown[j].key + ": " + 
+									cp[i].breakdown[j].percent + "%");
+							}
+						}
+					}
+				}
+			})
+			.on("mouseout", function(d) {
+				// d3.select(this).attr("fill", "black");
+				d3.select(".percent-wrap").remove();
+			});
+
+
+        // cluster the color groups
+        function clustering(alpha) {
+		    circle.each(function(d) {
+		    	if (d[filKey] != "Refused" 
+		    		&& d[filKey] != "Dont know" 
+		    		&& d[filKey] != "" 
+		    		&& d[qHappiness] < 97
+		    		&& (isNaN(d[filKey]) || d[filKey] < 97))
+		    	{
+		    		// magic math stuff
+		        	var cluster = clusters[d[qHappiness]][d[filKey]];
+		        	if (filKey == qHappiness) { 
+		        		cluster = clusters[d[qHappiness]]["Happiness"];
+		        	};
+
+				    var x = d.x - cluster.x,
+				        y = d.y - cluster.y,
+				        l = Math.sqrt(x * x + y * y),
+				        r = 4;
+				    if (l !== r) {
+				    	l = (l - r) / l * alpha;
+				        d.x -= x *= l; 
+				        d.y -= y *= l;
+				        cluster.x += x;
+				        cluster.y += y;
+				    }
+		    	}
+		    });
+		}
 
         function ticked(e) {
             circle
@@ -402,6 +569,31 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 				.entries(data);
 		}
 
+		function nest2DataBy(c1, c2) {
+			return d3.nest()
+				.key(function(d) {
+					return d[c1];
+				})
+				.key(function(d) {
+					return d[c2];
+				})
+				.entries(data);
+		}
+
+		function nest3DataBy(c1, c2, c3) {
+			return d3.nest()
+				.key(function(d) {
+					return d[c1];
+				})
+				.key(function(d) {
+					return d[c2];
+				})
+				.key(function(d) {
+					return d[c3];
+				})
+				.entries(data);
+		}
+
 		countryNest = nestDataBy("Country");
 		happyNest = nestDataBy(qHappiness);
 		genderNest = nestDataBy(qGender);
@@ -409,18 +601,12 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		employmentNest = nestDataBy(qEmployment);
 		relationshipNest = nestDataBy(qRelationship);
 		childrenNest = nestDataBy(qChildren);
-		function nestHappyInCountry() {
-			return d3.nest()
-				.key(function(d, i) {
-					return d.Country;
-				})
-				.key(function(d, i) {
-					return d[qHappiness];
-				})
-				.entries(data);
-		}
-
-		happyCountryNest = nestHappyInCountry();
+		happyCountryNest = nest2DataBy("Country", qHappiness);
+		countrySexHappy = nest3DataBy("Country", qGender, qHappiness);
+		countryAgeHappy = nest3DataBy("Country", qAge, qHappiness);
+		countryEmployHappy = nest3DataBy("Country", qEmployment, qHappiness);
+		countryRelHappy = nest3DataBy("Country", qRelationship, qHappiness);
+		countryChildHappy = nest3DataBy("Country", qChildren, qHappiness);
 
 		// Calculate average happiness for each country and push to avgQ2ByCountry
   		for (var i = 0; i < countryNest.length; i++) {

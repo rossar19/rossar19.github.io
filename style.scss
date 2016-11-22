@@ -57,7 +57,7 @@ body {
       }
       .avg {
         position: fixed;
-        top: 50;
+        top: 50px;
         left: 20px;
       }
     }
@@ -87,6 +87,19 @@ body {
           display: inline-block;
           width: 25%;
           height: 200px;
+        }
+        .percent-wrap {
+          position: absolute;
+          top: -150px;
+          left: 0;
+
+          .percent {
+            background-color: black;
+            color: white;
+            margin: 20px;
+            padding: 10px;
+            display: inline-block;
+          }
         }
       }
     }
