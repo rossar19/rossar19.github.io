@@ -2,17 +2,27 @@
 layout: noheader
 ---
 
-<h1 class="data-header">Header</h1>
-<p class="data-copy">Copy goes here.  Lorem ipsum dolor sit amet, consectetur adipisicing elit,
-sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
+<h1 class="data-header">Happiness: A Global Affair</h1>
+<p class="data-copy">"Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  
+The top represents the best possible life for you; the bottom, the worst possible life.  
+On which step do you feel you personally stand at present time?"
+<br /><br />
+Participants from 43 countries were asked this question, and here's on average how they answered.
+</p>
+
+<div class="color-scale">
+	<div class="sad">Low</div>
+	<div class="ok">Mid</div>
+	<div class="happy">High</div>
+</div>
+
+<div class="btn-wrapper"></div>
 
 <div class="main-wrapper--countries"></div>
 <div class="main-wrapper--data"></div>
 
 <script>
-	var pageTitle = "Header";
+	var pageTitle = "Happiness: A Global Affair";
 	var cIndex;              // Index of country currently viewed
 	var avgQ2ByCountry = []; // Array of each country's average happy rating
 
@@ -43,6 +53,88 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 
 	var simulation; // Force simulation used for particles
 
+	function drawPix(data) {
+		var svg = d3.select(".main-wrapper--countries")
+			.append("svg")
+			.attr("width", 90)
+			.attr("height", 200);
+
+		var rects = svg.selectAll("rect").data(data.values);	  // Element for country
+		var nameText = svg.selectAll("text").data(data);  // Element for country's name
+
+
+
+	    function calculateX(index) {
+	    	return 10 + (3*(index%25));
+	    }
+
+	    function calculateY(index, space) {
+	    	space = (space == null) ? 0 : space;
+	    	return (10 - space) + (3 * Math.floor(index/25));
+	    }
+
+	    var color = d3.scaleLinear()
+	    .domain([0,5, 10])
+	    .range(["#7B7B7B", "#7EC27E", "#ff0"]);
+
+	    // "#7B7B7B", "#7EC27E", "#ff0"
+	    // "#f00","#00f", "#ff0"
+
+		rects.enter().append("rect")
+		.attr("x", function(d, i) {
+			return 10 + (3*(i%25));
+		})
+		.attr("y", function(d, i) {
+			return 10 + (3 * Math.floor(i/25))
+		})
+		.attr("width", 2)
+		.attr("height", 2)
+		.attr("fill", function(d, i) {
+			return color(d[qHappiness]);
+		})
+		.on("mouseover", function(d, i) {
+			var offset = d3.select(".main-wrapper--countries").node().getBoundingClientRect();
+			var x = parseInt(d3.select(this).attr("x")) + offset.left;
+			var y = parseInt(d3.select(this).attr("y")) + offset.top;
+			d3.select(".main-wrapper--countries")
+				.append("span")
+				.attr("class", "avg")
+				.style("top", y + "px")
+				.style("left", x + "px");
+				//.text(avgQ2ByCountry[i].toFixed(1));
+		})
+		.on("mouseout", function(d, i) {
+			d3.select(".main-wrapper--countries .avg")
+				.remove();
+		});
+
+		// Add Text element to SVG
+	    var name = nameText.enter().append("text")
+	    .attr("x", function(d, i) {
+	      return calculateX(i);
+	    })
+	    .attr("y", function(d, i) {
+	    	return calculateY(i, 5);
+	    })
+	    .attr("id", function(d, i) {
+	    	return "L" + i;
+	    })
+	    .attr("class", "country--name")
+	    .html(function(d) {
+	    	var html = d.key;
+	    	if (d.key.length > 12) {
+	    		var arr = d.key.split(" ");
+	    		var x = d3.select(this).attr("x");
+	    		html = '<tspan x="' + x + '" dy="-16">' + arr[0] + 
+	    			'</tspan>' + '<tspan x="' + x + '" dy="16">' + 
+	    			arr[1] + '</tspan>';
+	    	}
+	    	return html;
+	    });
+
+	    createOnClick(countryNest);
+	}
+
 	// Draw each country and color based on average happiness
 	var drawAvg = function(data) {
 		var svg = d3.select(".main-wrapper--countries")
@@ -54,16 +146,16 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 
 		// Assign color based on average
 	    var color = d3.scaleLinear()
-	    .domain([2, 5, 8])
-	    .range(["#000", "#91719a", "#f5c750"]);
+	    .domain([4, 6, 8])
+	    .range(["#7B7B7B", "#7EC27E", "#ff0"]);
 
 	    function calculateX(index) {
-	    	return 20 + (120*(index%10));
+	    	return 120*(index%10);
 	    }
 
 	    function calculateY(index, space) {
 	    	space = (space == null) ? 0 : space;
-	    	return (40 - space) + (200 * Math.floor(index/10));
+	    	return (40 - space) + (125 * Math.floor(index/10));
 	    }
 
 	    // "#000", "#46535a", "#465f2c", 
@@ -86,7 +178,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 			return calculateY(i);
 		})
 		.attr("width", 100)
-		.attr("height", 150)
+		.attr("height", 50)
 		.attr("fill", function(d, i) {
 			return color(avgQ2ByCountry[i]);
 		})
@@ -144,9 +236,11 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 				d3.select(".data-header").text(data[cIndex].key);
 
 				d3.select(".main-wrapper--countries").style("display", "none");
+				d3.select(".color-scale").style("display", "none");
 
 				mDataWrapper.selectAll("*").remove();
 				mDataWrapper.style("display", "block");
+				d3.select(".btn-wrapper").style("display", "inline-block");
 				addFilterBtns();
 			});
 	    }
@@ -156,9 +250,7 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 	function addFilterBtns() {
 	    var mDataWrapper = d3.select(".main-wrapper--data");
 
-		var btnWrap = mDataWrapper
-			.append("div")
-			.attr("class", "btn-wrapper");
+		var btnWrap = d3.select(".btn-wrapper");
 
 		var dataWrap = mDataWrapper
 			.append("div")
@@ -268,6 +360,9 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		d3.select('.data-header').text(pageTitle);
 		d3.select('.main-wrapper--data').style("display", "none");
 		d3.select('.main-wrapper--countries').style("display", "block");
+		d3.select(".color-scale").style("display", "inline-block");
+		d3.select(".btn-wrapper").style("display", "none");
+		d3.select(".btn-wrapper").selectAll("*").remove();
 
 		simulation.stop();
 		d3.select(".data-wrapper svg").remove();
@@ -279,6 +374,14 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		lvl = (lvl == null) ? false : true;
 		var temp = [];
 
+
+	    var color = d3.scaleLinear()
+	    .domain([0,1,2,3,4,5,6,7,8,9,10])
+	    .range(["#000", "#46535a", "#465f2c", 
+	    		"#984350", "#91719a", "#f5c750", 
+	    		"#a8c9d9", "#c1dea0", "#d796a5", 
+	    		"#cdb5d7", "#f3d998"]);
+
 		if (lvl) {
 			var total = 0;
 
@@ -288,7 +391,8 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 				if (parseInt(country.values[i].key) < 97) {
 					obj = {
 						"key": country.values[i].key,
-						"percent": country.values[i].values.length
+						"percent": country.values[i].values.length,
+						"color": color(country.values[i].key)
 					}
 
 					temp.push(obj);
@@ -315,7 +419,8 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 							total = total + country.values[i].values[j].values.length;
 							var t = {
 								"key": country.values[i].values[j].key,
-								"percent": country.values[i].values[j].values.length
+								"percent": country.values[i].values[j].values.length,
+								"color": color(country.values[i].values[j].key)
 							}
 
 							oArr.push(t);
@@ -338,7 +443,9 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 		if (simulation != null) { simulation.stop(); }
 		var filKey;  // Data key associated with active filter
 		var percents;
-		var width = 900,
+		var width = d3.select(".data-wrapper")
+		    	.node()
+		    	.getBoundingClientRect().width,
 		    height = d3.select(".data-wrapper")
 		    	.node()
 		    	.getBoundingClientRect()
@@ -493,21 +600,41 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 			.on("mouseover", function(d) {
 				// d3.select(this).attr("fill", "red");
 				var pw = d3.select(".data-wrapper").append("div").attr("class", "percent-wrap");
+				var pwBox = pw.node().getBoundingClientRect();
+				var x = pwBox.left + (pwBox.width / 2);
+				var y = pwBox.top + (pwBox.height / 2);
+
+				yOffset = d3.select(".data-wrapper").node().getBoundingClientRect().top;
+				xOffset = d3.select(".data-wrapper").node().getBoundingClientRect().left;
+
+				var t = yOffset - d.y + 50;
+				var l = d.x - x - 50;
+				pw.style("left", l+"px").style("top", t+"px");
 				if (filKey == qHappiness) {
 					var cp = calcPercent(percents, true);
 					for (var i in cp) {
-						pw.append("div").attr("class", "percent").html(
-							cp[i].key + ": " +
-							cp[i].percent + "%");
+						pw.append("div")
+							.attr("class", "percent")
+							.html(
+								cp[i].key + ": " +
+								cp[i].percent + "%")
+							.style("background-color", cp[i].color)
+							.style("transform-origin", x + "px  "+ y + "px")
+							.style("transform", "rotate(" + i*(360/cp.length) + "deg)");
 					}
 				} else {
 					var cp = calcPercent(percents);
 					for (var i in cp) {
 						if (d.key == cp[i].key) {
 							for (var j in cp[i].breakdown) {
-								pw.append("div").attr("class", "percent").html(
-									cp[i].breakdown[j].key + ": " + 
-									cp[i].breakdown[j].percent + "%");
+								pw.append("div")
+									.attr("class", "percent")
+									.html(
+										cp[i].breakdown[j].key + ": " + 
+										cp[i].breakdown[j].percent + "%")
+									.style("background-color", cp[i].breakdown[j].color)
+									.style("transform-origin", x + "px  "+ y + "px")
+									.style("transform", "rotate(" + j*(360/cp[i].breakdown.length) + "deg)");
 							}
 						}
 					}
@@ -557,7 +684,8 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
         
         simulation
             .nodes(data[countIndex].values)
-            .on("tick", ticked);
+            .on("tick", ticked)
+            .alphaDecay(0.007);
 	}
 
 	d3.csv("Global Attitudes - shortCSV.csv", function(error, data) {
@@ -624,5 +752,9 @@ commodo consequat. Duis aute irure dolor in reprehenderit in voluptate .</p>
 
 	  	console.log(countryNest);
 	  	drawAvg(countryNest);
+
+	  	// for (var i = 0; i < countryNest.length; i++) {
+	  	// 	drawPix(countryNest[i]);
+	  	// }
 	});
 </script>
