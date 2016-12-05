@@ -62,17 +62,22 @@ body {
 
   .color-scale {
     display: inline-block;
-    padding: 15px 40px;
+    padding: 10px 27px;
     vertical-align: top;
-    div {
+    .color {
       display: inline-block;
-      width: 100px;
-      height: 20px;
-      text-align: center;
-      color: #ccc;
-      &.sad { background-color: #7B7B7B;}
-      &.ok { background-color: #7EC27E;}
-      &.happy { background-color: #ff0;}
+      margin-right: 16px;
+      span { width: 100px; }
+      div {
+        display: block;
+        width: 100px;
+        height: 20px;
+        margin-top: 5px;
+        text-align: center;
+        &.sad { background-color: #7B7B7B;}
+        &.ok { background-color: #7EC27E;}
+        &.happy { background-color: #ff0;}
+      }
     }
   }
 
@@ -137,26 +142,47 @@ body {
           height: 200px;
         }
         .percent-wrap {
-          $wh: 100px;
-          position: fixed;
+          $wh: 300px;
+          position: absolute;
           top: 10%;
           left: 10%;
-          width: $wh;
-          height: $wh;
           pointer-events: none;
+          //background-color: black;
+          .inner-wrap {
+            position: relative;
+            //background-color: red;
+            width: $wh;
+            height: $wh;
+            .percent {
+              background-color: black;
+              font-family: $maitree;
+              color: white;
+              //margin: 20px;
+              padding: 10px;
+              position: absolute;
+              top: 0;
+              left: 0;
+              display: inline-block;
+              width: 50px;
+              height: 50px;
+              border-radius: 50%;
+              text-align: center;
 
-          .percent {
-            background-color: black;
-            font-family: $maitree;
-            color: white;
-            margin: 20px;
-            padding: 10px;
-            position: absolute;
-            display: inline-block;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+              span {
+                display: block;
+                &.rating {
+                  //font-size: 14px;
+                  //line-height: 10px;
+                }
+                &.num {
+                  //line-height: 10px;
+                  //font-size: 15px;
+                }
+              }
+            }
           }
+
+          
         }
       }
     }

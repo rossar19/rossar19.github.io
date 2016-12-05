@@ -11,9 +11,18 @@ Participants from 43 countries were asked this question, and here's on average h
 </p>
 
 <div class="color-scale">
-	<div class="sad">Low</div>
-	<div class="ok">Mid</div>
-	<div class="happy">High</div>
+	<div class="color">
+		<span>Low</span>
+		<div class="sad"></div>
+	</div>
+	<div class="color">
+		<span>Mid</span>
+		<div class="ok"></div>
+	</div>
+	<div class="color">
+		<span>High</span>
+		<div class="happy"></div>
+	</div>
 </div>
 
 <div class="btn-wrapper"></div>
@@ -22,6 +31,9 @@ Participants from 43 countries were asked this question, and here's on average h
 <div class="main-wrapper--data"></div>
 
 <script>
+
+	/*   GLOBAL VARIABLES   */
+
 	var pageTitle = "Happiness: A Global Affair";
 	var cIndex;              // Index of country currently viewed
 	var avgQ2ByCountry = []; // Array of each country's average happy rating
@@ -42,6 +54,7 @@ Participants from 43 countries were asked this question, and here's on average h
 	var countryChildHappy;
 
 	var filters; // Categories to filter data
+	var simulation; // Force simulation used for particles
 
 	// Keys in data
 	var qHappiness = "Q2. Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  The top represents the best possible life for you; the bottom, the worst possible life.  On which step do you feel you personally stand at present time?";
@@ -51,89 +64,7 @@ Participants from 43 countries were asked this question, and here's on average h
 	var qRelationship = "Q153. Are you currently married, in a legal civil union, widowed, divorced, separated, or none of these?";
 	var qChildren = "Q157. How many children have you had?  Please count all your biological children who were born at any time in your life. [In Russia: but do not count adopted children or stepchildren].";
 
-	var simulation; // Force simulation used for particles
-
-	function drawPix(data) {
-		var svg = d3.select(".main-wrapper--countries")
-			.append("svg")
-			.attr("width", 90)
-			.attr("height", 200);
-
-		var rects = svg.selectAll("rect").data(data.values);	  // Element for country
-		var nameText = svg.selectAll("text").data(data);  // Element for country's name
-
-
-
-	    function calculateX(index) {
-	    	return 10 + (3*(index%25));
-	    }
-
-	    function calculateY(index, space) {
-	    	space = (space == null) ? 0 : space;
-	    	return (10 - space) + (3 * Math.floor(index/25));
-	    }
-
-	    var color = d3.scaleLinear()
-	    .domain([0,5, 10])
-	    .range(["#7B7B7B", "#7EC27E", "#ff0"]);
-
-	    // "#7B7B7B", "#7EC27E", "#ff0"
-	    // "#f00","#00f", "#ff0"
-
-		rects.enter().append("rect")
-		.attr("x", function(d, i) {
-			return 10 + (3*(i%25));
-		})
-		.attr("y", function(d, i) {
-			return 10 + (3 * Math.floor(i/25))
-		})
-		.attr("width", 2)
-		.attr("height", 2)
-		.attr("fill", function(d, i) {
-			return color(d[qHappiness]);
-		})
-		.on("mouseover", function(d, i) {
-			var offset = d3.select(".main-wrapper--countries").node().getBoundingClientRect();
-			var x = parseInt(d3.select(this).attr("x")) + offset.left;
-			var y = parseInt(d3.select(this).attr("y")) + offset.top;
-			d3.select(".main-wrapper--countries")
-				.append("span")
-				.attr("class", "avg")
-				.style("top", y + "px")
-				.style("left", x + "px");
-				//.text(avgQ2ByCountry[i].toFixed(1));
-		})
-		.on("mouseout", function(d, i) {
-			d3.select(".main-wrapper--countries .avg")
-				.remove();
-		});
-
-		// Add Text element to SVG
-	    var name = nameText.enter().append("text")
-	    .attr("x", function(d, i) {
-	      return calculateX(i);
-	    })
-	    .attr("y", function(d, i) {
-	    	return calculateY(i, 5);
-	    })
-	    .attr("id", function(d, i) {
-	    	return "L" + i;
-	    })
-	    .attr("class", "country--name")
-	    .html(function(d) {
-	    	var html = d.key;
-	    	if (d.key.length > 12) {
-	    		var arr = d.key.split(" ");
-	    		var x = d3.select(this).attr("x");
-	    		html = '<tspan x="' + x + '" dy="-16">' + arr[0] + 
-	    			'</tspan>' + '<tspan x="' + x + '" dy="16">' + 
-	    			arr[1] + '</tspan>';
-	    	}
-	    	return html;
-	    });
-
-	    createOnClick(countryNest);
-	}
+	/*   FUNCTIONS   */
 
 	// Draw each country and color based on average happiness
 	var drawAvg = function(data) {
@@ -149,41 +80,29 @@ Participants from 43 countries were asked this question, and here's on average h
 	    .domain([4, 6, 8])
 	    .range(["#7B7B7B", "#7EC27E", "#ff0"]);
 
-	    function calculateX(index) {
-	    	return 120*(index%10);
-	    }
-
+	    function calculateX(index) { return 120*(index%10); }
 	    function calculateY(index, space) {
-	    	space = (space == null) ? 0 : space;
+	    	space = (space == null) ? 0 : space; // add more spacing between rows
 	    	return (40 - space) + (125 * Math.floor(index/10));
 	    }
 
-	    // "#000", "#46535a", "#465f2c", 
-	    // 		"#984350", "#91719a", "#f5c750", 
-	    // 		"#a8c9d9", "#c1dea0", "#d796a5", 
-	    // 		"#cdb5d7", "#f3d998"
-
-	    // "#F00", "#00F", "#0F0"
-
 	    // Add rectangle to SVG
 		rects.enter().append("rect")
-		.attr("id", function(d, i) {
-			return "c" + i;
-		})
 		.attr("class", "country")
-		.attr("x", function(d, i) {
-			return calculateX(i);
-		})
-		.attr("y", function(d, i) {
-			return calculateY(i);
-		})
 		.attr("width", 100)
 		.attr("height", 50)
+		.attr("id",   function(d, i) { return "c" + i; })
+		.attr("x",    function(d, i) { return calculateX(i); })
+		.attr("y",    function(d, i) { return calculateY(i); })
 		.attr("fill", function(d, i) {
 			return color(avgQ2ByCountry[i]);
 		})
 		.on("mouseover", function(d, i) {
-			var offset = d3.select(".main-wrapper--countries").node().getBoundingClientRect();
+
+			// Show average happiness for this country on hover
+			var offset = d3.select(".main-wrapper--countries")
+				.node()
+				.getBoundingClientRect();
 			var x = parseInt(d3.select(this).attr("x")) + offset.left;
 			var y = parseInt(d3.select(this).attr("y")) + offset.top;
 			d3.select(".main-wrapper--countries")
@@ -200,27 +119,21 @@ Participants from 43 countries were asked this question, and here's on average h
 
 		// Add Text element to SVG
 	    var name = nameText.enter().append("text")
-	    .attr("x", function(d, i) {
-	      return calculateX(i);
-	    })
-	    .attr("y", function(d, i) {
-	    	return calculateY(i, 5);
-	    })
-	    .attr("id", function(d, i) {
-	    	return "L" + i;
-	    })
-	    .attr("class", "country--name")
-	    .html(function(d) {
-	    	var html = d.key;
-	    	if (d.key.length > 12) {
-	    		var arr = d.key.split(" ");
-	    		var x = d3.select(this).attr("x");
-	    		html = '<tspan x="' + x + '" dy="-16">' + arr[0] + 
-	    			'</tspan>' + '<tspan x="' + x + '" dy="16">' + 
-	    			arr[1] + '</tspan>';
-	    	}
-	    	return html;
-	    });
+		    .attr("class", "country--name")
+		    .attr("x",  function(d, i) { return calculateX(i); })
+		    .attr("y",  function(d, i) { return calculateY(i, 5); })
+		    .attr("id", function(d, i) { return "L" + i; })
+		    .html(function(d) {
+		    	var html = d.key;
+		    	if (d.key.length > 12) {
+		    		var arr = d.key.split(" ");
+		    		var x = d3.select(this).attr("x");
+		    		html = '<tspan x="' + x + '" dy="-16">' + arr[0] + 
+		    			'</tspan>' + '<tspan x="' + x + '" dy="16">' + 
+		    			arr[1] + '</tspan>';
+		    	}
+		    	return html;
+		    });
 
 	    createOnClick(data);
 	}
@@ -234,7 +147,6 @@ Participants from 43 countries were asked this question, and here's on average h
 			d3.select(id).on("click", function(e) {
 				cIndex = this.id.replace("c", "");
 				d3.select(".data-header").text(data[cIndex].key);
-
 				d3.select(".main-wrapper--countries").style("display", "none");
 				d3.select(".color-scale").style("display", "none");
 
@@ -249,9 +161,7 @@ Participants from 43 countries were asked this question, and here's on average h
 	// Adds filter buttons
 	function addFilterBtns() {
 	    var mDataWrapper = d3.select(".main-wrapper--data");
-
 		var btnWrap = d3.select(".btn-wrapper");
-
 		var dataWrap = mDataWrapper
 			.append("div")
 			.attr("class", "data-wrapper");
@@ -265,16 +175,18 @@ Participants from 43 countries were asked this question, and here's on average h
 		// Return an array of keys from data's children
 		function getChildArr(data) {
 			var arr = [];
-
-			if (isNaN(parseInt(data[0].key))) {
+			var item = (data[0].key != "") ? data[0].key : data[1].key;
+			if (isNaN(parseInt(item))) {
 				for (var n in data) {
-					if (data[n].key != "Refused" && data[n].key != "Dont know") {
+					if (data[n].key != "Refused" 
+						&& data[n].key != "Dont know") {
 						arr.push(data[n].key);
 					}
 				}
 			} else {
 				for (var n in data) {
-					if (data[n].key < 98 && data[n].key != "") {
+					if (data[n].key < 98 
+						&& data[n].key != "") {
 						arr.push(data[n].key);
 					}
 				}
@@ -294,9 +206,9 @@ Participants from 43 countries were asked this question, and here's on average h
 		// Create a button for each item in filters and create onclick functions
 		for (var n in filters) {
 			var btn = btnWrap.append("button")
-			.attr("id", n)
-			.attr("class", "filter-btn")
-			.text(n);
+				.attr("id", n)
+				.attr("class", "filter-btn")
+				.text(n);
 
 			// If first load, display subcategories of first item in filters
 			if (d3.select(".data-wrapper").html() == "") {
@@ -314,20 +226,12 @@ Participants from 43 countries were asked this question, and here's on average h
 	// Add subcategories to page
 	function displaySubs(arr, filter) {
 		var objArr = [];
-
 		for (var n in arr) {
 			var cat = d3.select(".data-wrapper").append("span")
 				.attr("class", "category")
 				.attr("id", "cat" + n)
-				.text(arr[n])
-				.on("mouseover", function(e) {
-					console.log("hover");
-				});
+				.text(arr[n]);
 		}
-
-		cat.on("mouseover", function(e) {
-			console.log("hover");
-		});
 
 		setSubcatCoords(objArr);
 		drawClusters(countryNest, objArr, cIndex, filter);
@@ -368,73 +272,62 @@ Participants from 43 countries were asked this question, and here's on average h
 		d3.select(".data-wrapper svg").remove();
 	}
 
-	// Calculate the happy percent breakdown of a country
+	// Calculate the happy percent breakdown of a country returns an array of objects
 	// pass country > category > happy rating
 	function calcPercent(country, lvl) {
 		lvl = (lvl == null) ? false : true;
 		var temp = [];
 
-
 	    var color = d3.scaleLinear()
 	    .domain([0,1,2,3,4,5,6,7,8,9,10])
-	    .range(["#000", "#46535a", "#465f2c", 
-	    		"#984350", "#91719a", "#f5c750", 
-	    		"#a8c9d9", "#c1dea0", "#d796a5", 
-	    		"#cdb5d7", "#f3d998"]);
-
-		if (lvl) {
-			var total = 0;
-
-			for (var i in country.values) {
-				total = total + country.values[i].values.length;
-
-				if (parseInt(country.values[i].key) < 97) {
-					obj = {
-						"key": country.values[i].key,
-						"percent": country.values[i].values.length,
-						"color": color(country.values[i].key)
-					}
-
-					temp.push(obj);
+	    .range(["#030269", "#0100be", "#002ffc", 
+	    		"#019efc", "#0DE0D9", "#85f98c", 
+	    		"#DCE018", "#ffaa02", "#f93003", 
+	    		"#c30000", "#7f0407"]); //#DCE018 #f5fa18 0ffdf5 #0DE0D9
+		if (lvl && (country.values[0].key != "Happiness")) {
+			country.values = [
+				{
+					"key": "Happiness",
+					"values": country.values
 				}
-			}
+			];
+		} 
 
-			for (var i in temp) {
-				temp[i].percent = ((temp[i].percent / total) * 100).toFixed(2);
-			}
-		} else {
-			for (var i in country.values) {
-				if ((isNaN(parseInt(country.values[i].key))
-						&& country.values[i].key != "Refused" 
-						&& country.values[i].key != "Dont know") ||
-					(parseInt(country.values[i].key) < 97
-						&& country.values[i].key != "")) {
+		for (var i in country.values) {
+			if ((isNaN(parseInt(country.values[i].key))
+					&& country.values[i].key != "Refused" 
+					&& country.values[i].key != "Dont know") ||
+				(parseInt(country.values[i].key) < 97
+					&& country.values[i].key != "")) {
 
-					var total = 0;
-					var oArr = [];
-					var catObj = { "key": country.values[i].key };
+				var total = 0;
+				var oArr = [];
+				var catObj = { "key": country.values[i].key };
 
-					for (var j in country.values[i].values) {
-						if (parseInt(country.values[i].values[j].key) < 97) {
-							total = total + country.values[i].values[j].values.length;
-							var t = {
-								"key": country.values[i].values[j].key,
-								"percent": country.values[i].values[j].values.length,
-								"color": color(country.values[i].values[j].key)
-							}
+				// Sort happy ratings in ascending order
+				country.values[i].values.sort(function(a,b) { return a.key - b.key});
 
-							oArr.push(t);
+				for (var j in country.values[i].values) {
+					if (parseInt(country.values[i].values[j].key) < 97) {
+						total = total + country.values[i].values[j].values.length;
+						var t = {
+							"key": country.values[i].values[j].key,
+							"percent": country.values[i].values[j].values.length,
+							"color": color(country.values[i].values[j].key)
 						}
-					}
 
-					for (var i in oArr) {
-						oArr[i].percent = ((oArr[i].percent / total) * 100).toFixed(2);
+						oArr.push(t);
 					}
-					catObj.breakdown = oArr;
-					temp.push(catObj);
 				}
+
+				for (var i in oArr) {
+					oArr[i].percent = ((oArr[i].percent / total) * 100).toFixed(2).replace(".00", "");
+				}
+				catObj.breakdown = oArr;
+				temp.push(catObj);
 			}
 		}
+		
 		return temp;
 	}
 
@@ -450,19 +343,11 @@ Participants from 43 countries were asked this question, and here's on average h
 		    	.node()
 		    	.getBoundingClientRect()
 		    	.height + 100;
-		var clusters = [
-				{ "key": "0" },
-				{ "key": "1" },
-				{ "key": "2" },
-				{ "key": "3" },
-				{ "key": "4" },
-				{ "key": "5" },
-				{ "key": "6" },
-				{ "key": "7" },
-				{ "key": "8" },
-				{ "key": "9" },
-				{ "key": "10" }
-		    ];
+		var clusters = [];
+		for (var i = 0; i < 11; i++) {
+			var obj = { "key": i };
+			clusters.push(obj);
+		}
 
 		switch(filter) {
 			case "Happy":
@@ -541,31 +426,16 @@ Participants from 43 countries were asked this question, and here's on average h
 		var circles = svg.selectAll("circle").data(data[countIndex].values);
 		var centers = svg.selectAll("circle").data(objArr);
 
-		//console.log(happyCountryNest);
-
-
-	    // var color = d3.scaleLinear()
-	    // .domain([0, 10])
-	    // .range(["#0C00FF", "#FF9C00"]);
-
 	    var color = d3.scaleLinear()
 	    .domain([0,1,2,3,4,5,6,7,8,9,10])
-	    .range(["#000", "#46535a", "#465f2c", 
-	    		"#984350", "#91719a", "#f5c750", 
-	    		"#a8c9d9", "#c1dea0", "#d796a5", 
-	    		"#cdb5d7", "#f3d998"]);
+	    .range(["#030269", "#0100be", "#002ffc", 
+	    		"#019efc", "#0DE0D9", "#85f98c", 
+	    		"#DCE018", "#ffaa02", "#f93003", 
+	    		"#c30000", "#7f0407"]);
 
-	    /* "#000", "#46535a", "#465f2c", 
-	    		"#984350", "#91719a", "#f5c750", 
-	    		"#a8c9d9", "#c1dea0", "#d796a5", 
-	    		"#cdb5d7", "#f3d998" 
-			
-			"#f3d998", "#c1dea0", "#cdb5d7", 
-	    		"#a8c9d9", "#d796a5", "#8bcf82", 
-	    		"#ec5eb2", "#48c1ef", "#4dff33", 
-	    		"#ffb31a", "#fff100"
-
-	    		*/
+	    // var radius = d3.scaleLinear()
+	    // 	.domain([0, 20, 100])
+	    // 	.range([45, 80, 100]);
 
 	    var colorArr = [];
 	    for (var i = 0; i < 11; i++) {
@@ -598,50 +468,42 @@ Participants from 43 countries were asked this question, and here's on average h
 				return d.y;
 			})
 			.on("mouseover", function(d) {
-				// d3.select(this).attr("fill", "red");
+				var cp = (filKey == qHappiness) ? calcPercent(percents, true) : calcPercent(percents);
 				var pw = d3.select(".data-wrapper").append("div").attr("class", "percent-wrap");
-				var pwBox = pw.node().getBoundingClientRect();
-				var x = pwBox.left + (pwBox.width / 2);
-				var y = pwBox.top + (pwBox.height / 2);
+				var pwIW = pw.append("div").attr("class", "inner-wrap");
 
-				yOffset = d3.select(".data-wrapper").node().getBoundingClientRect().top;
-				xOffset = d3.select(".data-wrapper").node().getBoundingClientRect().left;
+				for (var i in cp) {
+					if (d.key == cp[i].key) {
+						for (var j in cp[i].breakdown) {
+							var size = cp[i].breakdown.length * 22 + 50;
+							size = 300;//(size > 150) ? size : 150;
+							pwIW.style("width", size + "px").style("height", size + "px");
+							var pwBox = pw.node().getBoundingClientRect();
+							var t = d.y - (pwBox.height/2);
+							var l = d.x - (pwBox.width/2);
+							pw.style("left", l+"px").style("top", t+"px");
 
-				var t = yOffset - d.y + 50;
-				var l = d.x - x - 50;
-				pw.style("left", l+"px").style("top", t+"px");
-				if (filKey == qHappiness) {
-					var cp = calcPercent(percents, true);
-					for (var i in cp) {
-						pw.append("div")
-							.attr("class", "percent")
-							.html(
-								cp[i].key + ": " +
-								cp[i].percent + "%")
-							.style("background-color", cp[i].color)
-							.style("transform-origin", x + "px  "+ y + "px")
-							.style("transform", "rotate(" + i*(360/cp.length) + "deg)");
-					}
-				} else {
-					var cp = calcPercent(percents);
-					for (var i in cp) {
-						if (d.key == cp[i].key) {
-							for (var j in cp[i].breakdown) {
-								pw.append("div")
-									.attr("class", "percent")
-									.html(
-										cp[i].breakdown[j].key + ": " + 
-										cp[i].breakdown[j].percent + "%")
-									.style("background-color", cp[i].breakdown[j].color)
-									.style("transform-origin", x + "px  "+ y + "px")
-									.style("transform", "rotate(" + j*(360/cp[i].breakdown.length) + "deg)");
-							}
+							var p = pwIW.append("div")
+								.attr("class", "percent")
+								.style("background-color", cp[i].breakdown[j].color)
+								.style("transform-origin", pwBox.width/2 + "px  "+ pwBox.height/2 + "px")
+								// .style("width", radius(cp[i].breakdown[j].percent) + "px")
+								// .style("height", radius(cp[i].breakdown[j].percent) + "px")
+								.style("transform", "rotate(" + j*(360/cp[i].breakdown.length) + "deg)")
+								.append("div")
+								.style("transform", "rotate(-" + j*(360/cp[i].breakdown.length) + "deg)");
+
+							p.append("span")
+								.attr("class", "rating")
+								.text(cp[i].breakdown[j].key);
+							p.append("span")
+								.attr("class", "num")
+								.text(cp[i].breakdown[j].percent + "%");
 						}
 					}
 				}
 			})
 			.on("mouseout", function(d) {
-				// d3.select(this).attr("fill", "black");
 				d3.select(".percent-wrap").remove();
 			});
 
@@ -693,7 +555,7 @@ Participants from 43 countries were asked this question, and here's on average h
 			return d3.nest()
 				.key(function(d, i) {
 					return d[category];
-				})
+				}).sortKeys(d3.ascending)
 				.entries(data);
 		}
 
@@ -701,10 +563,10 @@ Participants from 43 countries were asked this question, and here's on average h
 			return d3.nest()
 				.key(function(d) {
 					return d[c1];
-				})
+				}).sortKeys(d3.ascending)
 				.key(function(d) {
 					return d[c2];
-				})
+				}).sortKeys(d3.ascending)
 				.entries(data);
 		}
 
@@ -712,13 +574,13 @@ Participants from 43 countries were asked this question, and here's on average h
 			return d3.nest()
 				.key(function(d) {
 					return d[c1];
-				})
+				}).sortKeys(d3.ascending)
 				.key(function(d) {
 					return d[c2];
-				})
+				}).sortKeys(d3.ascending)
 				.key(function(d) {
 					return d[c3];
-				})
+				}).sortKeys(d3.ascending)
 				.entries(data);
 		}
 
