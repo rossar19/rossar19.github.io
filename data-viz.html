@@ -476,7 +476,7 @@ Participants from 43 countries were asked this question, and here's on average h
 					if (d.key == cp[i].key) {
 						for (var j in cp[i].breakdown) {
 							var size = cp[i].breakdown.length * 22 + 50;
-							size = 300;//(size > 150) ? size : 150;
+							size = (size > 150) ? size : 150;
 							pwIW.style("width", size + "px").style("height", size + "px");
 							var pwBox = pw.node().getBoundingClientRect();
 							var t = d.y - (pwBox.height/2);
