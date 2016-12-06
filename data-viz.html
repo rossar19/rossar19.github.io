@@ -388,7 +388,7 @@ Participants from 43 countries were asked this question, and here's on average h
             .force("collide",d3.forceCollide(2).strength(0))
             .force("charge", d3.forceManyBody().strength(-5))
             .force("y", d3.forceY(function(d) {
-            		var temp = -999;  // Lazily hide the things that don't apply
+            		var temp = -999;  // Lazily hide the things that don't apply 
             		for (var i = 0; i < objArr.length; i++) {
             			if (d[filKey].includes(objArr[i].key) || filKey == qHappiness) {
             				// Add first data point of color group to array and gravitate to center
