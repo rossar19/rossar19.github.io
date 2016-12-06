@@ -78,7 +78,12 @@ Participants from 43 countries were asked this question, and here's on average h
 		// Assign color based on average
 	    var color = d3.scaleLinear()
 	    .domain([4, 6, 8])
-	    .range(["#7B7B7B", "#7EC27E", "#ff0"]);
+	    .range(["#0DE0D9", "#f5fa18", "#f93003"]); //"#7B7B7B", "#7EC27E", "#ff0"
+
+	    // "#030269", "#0100be", "#002ffc", 
+	    // 		"#019efc", "#0DE0D9", "#85f98c", 
+	    // 		"#DCE018", "#ffaa02", "#f93003", 
+	    // 		"#c30000", "#7f0407"
 
 	    function calculateX(index) { return 120*(index%10); }
 	    function calculateY(index, space) {
@@ -433,9 +438,9 @@ Participants from 43 countries were asked this question, and here's on average h
 	    		"#DCE018", "#ffaa02", "#f93003", 
 	    		"#c30000", "#7f0407"]);
 
-	    // var radius = d3.scaleLinear()
-	    // 	.domain([0, 20, 100])
-	    // 	.range([45, 80, 100]);
+	    var radius = d3.scaleLinear()
+	    	.domain([0, 20, 100])
+	    	.range([45, 80, 100]);
 
 	    var colorArr = [];
 	    for (var i = 0; i < 11; i++) {
@@ -471,6 +476,7 @@ Participants from 43 countries were asked this question, and here's on average h
 				var cp = (filKey == qHappiness) ? calcPercent(percents, true) : calcPercent(percents);
 				var pw = d3.select(".data-wrapper").append("div").attr("class", "percent-wrap");
 				var pwIW = pw.append("div").attr("class", "inner-wrap");
+				var te = d3.select("body").append("div").attr("class", "percent-bd");
 
 				for (var i in cp) {
 					if (d.key == cp[i].key) {
@@ -489,7 +495,7 @@ Participants from 43 countries were asked this question, and here's on average h
 								.style("transform-origin", pwBox.width/2 + "px  "+ pwBox.height/2 + "px")
 								// .style("width", radius(cp[i].breakdown[j].percent) + "px")
 								// .style("height", radius(cp[i].breakdown[j].percent) + "px")
-								.style("transform", "rotate(" + j*(360/cp[i].breakdown.length) + "deg)")
+								.style("transform", "rotate(" + j*((360/cp[i].breakdown.length)) + "deg)")
 								.append("div")
 								.style("transform", "rotate(-" + j*(360/cp[i].breakdown.length) + "deg)");
 
@@ -499,12 +505,19 @@ Participants from 43 countries were asked this question, and here's on average h
 							p.append("span")
 								.attr("class", "num")
 								.text(cp[i].breakdown[j].percent + "%");
+
+							// te.append("div")
+							// 	.style("width", (cp[i].breakdown[j].percent - 0.01) + "%")
+							// 	.style("height", "100%")
+							// 	.style("display", "inline-block")
+							// 	.style("background-color", cp[i].breakdown[j].color);
 						}
 					}
 				}
 			})
 			.on("mouseout", function(d) {
 				d3.select(".percent-wrap").remove();
+				// d3.select(".percent-bd").remove();
 			});
 
 

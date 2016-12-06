@@ -18,23 +18,34 @@ body {
   }
 
   .data-header {
-
+    font-family: 'Playfair Display', serif;
   }
 
   .data-copy {
     max-width: 450px;
     font-size: 14px;
+    line-height: 22px;
     display: inline-block;
     .back-btn {
       display: block;
       color: black;
-      text-decoration: none;
-      font-weight: bold;
+      //text-decoration: none;
+      //font-weight: bold;
       margin-top: 20px;
       &:hover {
-        text-decoration: underline;
+        font-weight: bold;
       }
     }
+  }
+
+
+  .percent-bd {
+    position: fixed;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    pointer-events: none;
   }
 
   .btn-wrapper {
@@ -51,6 +62,7 @@ body {
         padding: 10px 15px;
         text-align: center;
         width: 120px;
+        font-family: "Raleway", sans-serif;
 
         &:hover {
           background-color: black;
@@ -69,14 +81,14 @@ body {
       margin-right: 16px;
       span { width: 100px; }
       div {
-        display: block;
-        width: 100px;
-        height: 20px;
+        display: inline-block;
+        width: 20px;
+        height: 10px;
         margin-top: 5px;
         text-align: center;
-        &.sad { background-color: #7B7B7B;}
-        &.ok { background-color: #7EC27E;}
-        &.happy { background-color: #ff0;}
+        &.sad { background-color: #0DE0D9;}
+        &.ok { background-color: #f5fa18;}
+        &.happy { background-color: #f93003;}
       }
     }
   }
@@ -94,7 +106,7 @@ body {
         display: inline-block;
         margin: 15px 10px;
         &:hover {
-          opacity: 0.5;
+          opacity: 0.8;
           cursor: pointer;
         }
         &--svg {
@@ -103,6 +115,7 @@ body {
         }
         &--name {
           margin: 5px 0;
+          font-family: 'Playfair Display', serif;
         }
         &--block {
           width: 100px;
@@ -140,6 +153,9 @@ body {
           display: inline-block;
           width: 25%;
           height: 200px;
+          font-family: 'Playfair Display', serif;
+          position: relative;
+          //z-index: 10;
         }
         .percent-wrap {
           $wh: 300px;
