@@ -86,9 +86,9 @@ body {
         height: 10px;
         margin-top: 5px;
         text-align: center;
-        &.sad { background-color: #0DE0D9;}
-        &.ok { background-color: #f5fa18;}
-        &.happy { background-color: #f93003;}
+        &.sad { background-color: #7B7B7B;}
+        &.ok { background-color: #7EC27E;}
+        &.happy { background-color: #ff0;} // "#7B7B7B", "#7EC27E", "#ff0"
       }
     }
   }
