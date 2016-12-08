@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
     // Assign color based on average
       var color = d3.scaleLinear()
       .domain([4, 6, 8])
-      .range(["#7B7B7B", "#E5CCA4", "#FAFF0F"]); /
+      .range(["#7B7B7B", "#E5CCA4", "#FAFF0F"]);
 
       function calculateX(index) { return (cWidth + rMargin)*(index%columns); }
       function calculateY(index, space) {
