@@ -1,54 +1,40 @@
 ---
 ---
 
-$raleway: 'Raleway', sans-serif;
-$maitree: 'Maitree', serif;
+$sansSerif: 'Roboto', sans-serif;
+$serif: 'Playfair Display', serif;
 
 body {
-  font-family: $raleway;
+  font-family: $sansSerif;
   margin: 0 auto;
   padding: 20px 40px;
-  //background-color: #F4FCF7;  //#FAF8DC; //#FBFAEA;
 
-  header {
+  .top-wrapper {
     width: 100%;
-    text-align: center;
-    background-color: #5daaa7;
-    padding: 20px 0;
-  }
+    max-width: 1366px;
+    margin: 0 auto;
 
-  .data-header {
-    font-family: 'Playfair Display', serif;
-  }
+    .data-header {
+      font-family: $serif;
+      margin-bottom: 0;
+    }
 
-  .data-copy {
-    max-width: 450px;
-    font-size: 14px;
-    line-height: 22px;
-    display: inline-block;
-    .back-btn {
-      display: block;
-      color: black;
-      //text-decoration: none;
-      //font-weight: bold;
-      margin-top: 20px;
-      &:hover {
-        font-weight: bold;
+    .data-copy {
+      max-width: 450px;
+      font-size: 14px;
+      line-height: 20px;
+      display: inline-block;
+      .back-btn {
+        display: block;
+        color: black;
+        margin-top: 20px;
+        &:hover {
+          font-weight: bold;
+        }
       }
     }
-  }
 
-
-  .percent-bd {
-    position: fixed;
-    bottom: 0px;
-    left: 0;
-    width: 100%;
-    height: 50px;
-    pointer-events: none;
-  }
-
-  .btn-wrapper {
+    .btn-wrapper {
       width: 450px;
       margin-left: 10%;
       display: none;
@@ -62,7 +48,7 @@ body {
         padding: 10px 15px;
         text-align: center;
         width: 120px;
-        font-family: "Raleway", sans-serif;
+        font-family: $sansSerif;
 
         &:hover {
           background-color: black;
@@ -72,23 +58,84 @@ body {
       }
     }
 
-  .color-scale {
-    display: inline-block;
-    padding: 10px 27px;
-    vertical-align: top;
-    .color {
+    .color-scale {
       display: inline-block;
-      margin-right: 16px;
-      span { width: 100px; }
-      div {
-        display: inline-block;
-        width: 20px;
-        height: 10px;
-        margin-top: 5px;
-        text-align: center;
-        &.sad { background-color: #7B7B7B;}
-        &.ok { background-color: #7EC27E;}
-        &.happy { background-color: #ff0;} // "#7B7B7B", "#7EC27E", "#ff0"
+      padding: 10px 27px;
+      vertical-align: top;
+      .color {
+        display: block;
+        margin-right: 16px;
+        span { margin-right: 10px; }
+        div {
+          display: inline-block;
+          width: 20px;
+          height: 10px;
+          margin-top: 5px;
+          text-align: center;
+          float: right;
+          &.sad { background-color: #7B7B7B;}
+          &.ok { background-color: #E5CCA4;}
+          &.happy { background-color: #ff0;} // "#7B7B7B", "#7EC27E", "#ff0"
+        }
+      }
+    }
+  }
+
+  .percent-bd {
+    position: fixed;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    pointer-events: none;
+    .percent-cat {
+      position: absolute;
+      top: -14px;
+      font-family: $sansSerif;
+      color: #666;
+      opacity: 0.3;
+      font-size: 25px;
+      padding: 0px 5px;
+      z-index: -1;
+      line-height: 11px;
+      text-transform: lowercase;
+      font-variant: small-caps;
+      font-weight: bold;
+    }
+    .percent-label {
+      position: absolute;
+      padding: 0px 5px;
+      mark { 
+        background-color: transparent;
+        &.rating {
+          display: block;
+          color: white;
+          font-weight: bold;
+        }
+      }
+      &--left {
+        left: 0px;
+        height: 100px;
+        border-left: 1px solid rgb(123, 123, 123);
+      }
+      &--right {
+        text-align: right;
+        right: 0px;
+        height: 100px;
+        border-right: 1px solid rgb(123, 123, 123);
+      }
+      &--right, &--left {
+        position: absolute;
+        padding: 0px 2px; 
+        top: -100px;
+        mark { 
+          background-color: rgba(255, 255, 255, 0.8);
+          &.rating {
+            display: block;
+            font-weight: bold;
+            color: #DEDEDE;
+          }
+        }
       }
     }
   }
@@ -98,16 +145,30 @@ body {
     margin: 40px 0;
 
     &--countries {
+      max-width: 1366px;
+      width: 100%;
+      margin: 0 auto;
       display: block;
       position: relative;
+      margin-top: 20px;
       .country {
        // width: 100px;
         //height: 150px;
         display: inline-block;
         margin: 15px 10px;
+        stroke-width: 0px;
+        stroke-dasharray: 0px 100px 50px 100px;
+        stroke: white;
+        transition: width 0.5s, stroke-width 0.5s, stroke-dasharray 0.5s;
         &:hover {
-          opacity: 0.8;
+          stroke-dasharray: 0px 50px 50px 100px;
+          stroke: white;
+          stroke-width: 100px;
+          width: 50px;
+          //opacity: 0;
           cursor: pointer;
+          //transition: opacity 0.2s;
+          transition: width 0.2s, stroke-width 0.2s, stroke-dasharray 0.2s;
         }
         &--svg {
           width: 100%;
@@ -115,7 +176,7 @@ body {
         }
         &--name {
           margin: 5px 0;
-          font-family: 'Playfair Display', serif;
+          font-family: $serif;
         }
         &--block {
           width: 100px;
@@ -124,10 +185,11 @@ body {
         }
       }
       .avg {
-        font-family: $maitree;
+        font-family: $sansSerif;
         font-weight: bold;
         pointer-events: none;
-        font-size: 44px;
+        font-size: 40px;
+        line-height: 73px;
         color: white;
         position: fixed;
         top: 50px;
@@ -137,6 +199,12 @@ body {
 
     &--data {
       display: none;
+      width: 100%;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      z-index: -1;
+      min-height: 100vh;
       .data-wrapper {
         width: 100%;
         display: inline-block;
@@ -153,8 +221,9 @@ body {
           display: inline-block;
           width: 25%;
           height: 200px;
-          font-family: 'Playfair Display', serif;
+          font-family: $serif;
           position: relative;
+          vertical-align: top;
           //z-index: 10;
         }
         .percent-wrap {
@@ -171,7 +240,7 @@ body {
             height: $wh;
             .percent {
               background-color: black;
-              font-family: $maitree;
+              font-family: $sansSerif;
               color: white;
               //margin: 20px;
               padding: 10px;

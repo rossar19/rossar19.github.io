@@ -1,7 +1,5 @@
 # rossar19.github.io
 
-## my life is a lie
+## Some stuff goes here
 
-...or is it?
-
-this is a change
+...and then here...
