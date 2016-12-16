@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-		<meta charset="utf-8" /> 
+		<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width">
 	  <title>
       {% if page.title %}
         This page is: {{ page.title }}
@@ -9,10 +10,10 @@
         My Non-Existent Self and I
       {% endif %}
     </title>
-		<link rel="stylesheet" href="../style.css" />
+		<link rel="stylesheet" href="../the-happy-globe/style.css" />
     <link href="https://fonts.googleapis.com/css?family=Maitree:200,400,700|Roboto:300,700|Playfair+Display" rel="stylesheet">
     <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script src="script.js"></script>
+    <script src="/the-happy-globe/script.js"></script>
 	</head>
 	<body>
     {{ content }}

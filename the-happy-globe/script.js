@@ -1,41 +1,8 @@
----
-layout: noheader
----
-<header class="top-wrapper">
-	<h1 class="data-header">Happiness: A Global Affair</h1>
-	<p class="data-copy">"Imagine a ladder with steps numbered from 0 at the bottom to 10 at the top.  
-	The top represents the best possible life for you; the bottom, the worst possible life.  
-	On which step do you feel you personally stand at present time?"
-	<br /><br />
-	Participants from 43 countries were asked this question, and here's how they answered on average.
-	</p>
 
-	<div class="color-scale">
-		<div class="color">
-			<span>Low</span>
-			<div class="sad"></div>
-		</div>
-		<div class="color">
-			<span>Mid</span>
-			<div class="ok"></div>
-		</div>
-		<div class="color">
-			<span>High</span>
-			<div class="happy"></div>
-		</div>
-	</div>
-
-	<div class="btn-wrapper"></div>
-</header>
-
-<div class="main-wrapper--countries">
-	<h3 id="loading">loading...</h3>
-</div>
-<div class="main-wrapper--data"></div>
-
-<script>
-
-	/*   GLOBAL VARIABLES   */
+// Run script after content loads
+document.addEventListener("DOMContentLoaded", function(e) {
+  
+   /*   GLOBAL VARIABLES   */
 
   var pageTitle = "Happiness: A Global Affair";
   var cIndex;              // Index of country currently viewed
@@ -173,6 +140,7 @@ layout: noheader
         mDataWrapper.selectAll("*").remove();
         mDataWrapper.style("display", "block");
         d3.select(".btn-wrapper").style("display", "inline-block");
+        d3.select(".back-btn").style("display", "block");
         addFilterBtns();
       });
       }
@@ -180,17 +148,11 @@ layout: noheader
 
   // Adds filter buttons
   function addFilterBtns() {
-      var mDataWrapper = d3.select(".main-wrapper--data");
+    var mDataWrapper = d3.select(".main-wrapper--data");
     var btnWrap = d3.select(".btn-wrapper");
     var dataWrap = mDataWrapper
       .append("div")
       .attr("class", "data-wrapper");
-
-    d3.select(".data-copy")
-      .append("a")
-      .attr("class", "back-btn")
-      .attr("href", "javascript:goBack()")
-      .text("Choose a different country");
 
     // Return an array of keys from data's children
     function getChildArr(data) {
@@ -230,18 +192,25 @@ layout: noheader
         .attr("class", "filter-btn")
         .text(n);
 
-      // If first load, display subcategories of first item in filters
-      if (d3.select(".data-wrapper").html() == "") {
-        displaySubs(filters[n], n);
-      }
+      
 
       // On click, clear old children and add new subcategories
       btn.on("click", function(e) {
+        window.scrollTo(0,0);
         dataWrap.selectAll("*").remove();
         d3.select(".percent-bd").remove();
         displaySubs(filters[this.id], this.id);
       });
     }
+
+    // If first load, display subcategories of first item in filters
+  if (d3.select(".data-wrapper").html() == "") {
+    displaySubs(filters["Happy"], "Happy");
+
+    d3.select(".back-btn").on("click", function() {
+      goBack();
+    });
+  }
 
     var top = d3.select(".top-wrapper").node().getBoundingClientRect().top;
     var height = d3.select(".top-wrapper").node().getBoundingClientRect().height;
@@ -293,13 +262,13 @@ layout: noheader
 
   // Return to homepage
   function goBack() {
-    d3.select('.back-btn').remove();
     d3.select('.data-header').text(pageTitle);
     d3.select('.main-wrapper--data').style("display", "none");
     d3.select('.main-wrapper--countries').style("display", "block");
     d3.select(".color-scale").style("display", "inline-block");
     d3.select(".btn-wrapper").style("display", "none");
     d3.select(".btn-wrapper").selectAll("*").remove();
+    d3.select(".back-btn").style("display", "none");
 
     simulation.stop();
     d3.select(".data-wrapper svg").remove();
@@ -364,7 +333,6 @@ layout: noheader
     var filKey;  // Data key associated with active filter
     var percents;
 
-
     var mainWrap = d3.select(".main-wrapper--data").node().getBoundingClientRect().height;
     var top = d3.select(".top-wrapper").node().getBoundingClientRect().top;
     var tHeight = d3.select(".top-wrapper").node().getBoundingClientRect().height;
@@ -376,7 +344,7 @@ layout: noheader
         height = d3.select(".data-wrapper")
           .node()
           .getBoundingClientRect()
-          .height;
+          .height + 100;
     var clusters = [];
     for (var i = 0; i < 11; i++) {
       var obj = { "key": i };
@@ -667,4 +635,5 @@ layout: noheader
       console.log(countryNest);
       drawAvg(countryNest);
   });
-</script>
+
+});
